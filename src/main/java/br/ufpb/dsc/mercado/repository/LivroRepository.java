@@ -1,13 +1,13 @@
 package br.ufpb.dsc.mercado.repository;
 
-import br.ufpb.dsc.mercado.domain.Produto;
+import br.ufpb.dsc.mercado.domain.Livro;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 /**
- * Repositório Spring Data JPA para a entidade {@link Produto}.
+ * Repositório Spring Data JPA para a entidade {@link Livro}.
  *
  * <p><strong>O que é Spring Data JPA?</strong><br>
  * Spring Data JPA elimina a necessidade de escrever implementações de repositório manualmente.
@@ -42,7 +42,7 @@ import org.springframework.stereotype.Repository;
  * @see org.springframework.data.domain.Pageable
  */
 @Repository // Opcional quando se estende JpaRepository, mas documenta a intenção
-public interface ProdutoRepository extends JpaRepository<Produto, Long> {
+public interface LivroRepository extends JpaRepository<Livro, Long> {
 
     /**
      * Busca produtos cujo nome contenha o texto informado, sem distinção de maiúsculas/minúsculas.
@@ -64,5 +64,5 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
      * @param pageable configuração de paginação e ordenação
      * @return página de produtos que correspondem ao critério de busca
      */
-    Page<Produto> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
+    Page<Livro> findByTituloContainingIgnoreCase(String nome, Pageable pageable);
 }

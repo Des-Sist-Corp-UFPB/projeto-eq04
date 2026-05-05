@@ -5,7 +5,7 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
 /**
- * DTO (Data Transfer Object) para criação e edição de produtos.
+ * DTO (Data Transfer Object) para criação e edição de livros.
  *
  * <p><strong>Por que usar um DTO em vez da entidade diretamente?</strong><br>
  * É uma boa prática separar os dados de entrada (formulário) da entidade de domínio.
@@ -27,28 +27,37 @@ import java.math.BigDecimal;
  * pelo Spring quando o controller recebe os dados com {@code @Valid} ou {@code @Validated}.
  * Se alguma regra falhar, o Spring lança {@code MethodArgumentNotValidException}.
  *
- * @param nome      nome do produto — obrigatório, entre 2 e 120 caracteres
- * @param descricao descrição opcional — máximo 2000 caracteres
- * @param preco     preço do produto — obrigatório, não negativo, máximo 2 casas decimais
+ * @param titulo        título do livro — obrigatório, entre 1 e 255 caracteres
+ * @param autor         nome do autor — obrigatório, entre 2 e 150 caracteres
+ * @param descricao       descricao opcional — máximo 2000 caracteres
+ * @param preco         preço do livro — obrigatório, não negativo, máximo 2 casas decimais
+ * @param anoPublicacao ano de publicação — opcional, entre 1000 e 9999
  *
  * @author DSC - UFPB Campus IV
  */
-public record ProdutoForm(
+public record LivroForm(
 
         /**
          * {@code @NotBlank} falha se o valor for {@code null}, vazio ("") ou apenas espaços.
          * Difere de {@code @NotNull} (aceita strings vazias) e {@code @NotEmpty} (aceita espaços).
          * {@code @Size} valida o comprimento da string.
          */
-        @NotBlank(message = "O nome é obrigatório")
-        @Size(min = 2, max = 120, message = "O nome deve ter entre 2 e 120 caracteres")
-        String nome,
+        @NotBlank(message = "O título é obrigatório")
+        @Size(min = 1, max = 255, message = "O título deve ter entre 1 e 255 caracteres")
+        String titulo,
+
+        /**
+         * Nome do autor do livro. Obrigatório.
+         */
+        @NotBlank(message = "O autor é obrigatório")
+        @Size(min = 2, max = 150, message = "O autor deve ter entre 2 e 150 caracteres")
+        String autor,
 
         /**
          * Campo opcional. Sem {@code @NotBlank}, o campo pode ser nulo ou vazio.
          * {@code @Size} ainda é aplicado quando o valor não for nulo.
          */
-        @Size(max = 2000, message = "A descrição pode ter no máximo 2000 caracteres")
+        @Size(max = 2000, message = "A sinopse pode ter no máximo 2000 caracteres")
         String descricao,
 
         /**
@@ -59,7 +68,15 @@ public record ProdutoForm(
         @NotNull(message = "O preço é obrigatório")
         @DecimalMin(value = "0.00", message = "O preço não pode ser negativo")
         @Digits(integer = 8, fraction = 2, message = "Preço deve ter no máximo 8 dígitos inteiros e 2 decimais")
-        BigDecimal preco
+        BigDecimal preco,
+
+        /**
+         * Ano de publicação opcional.
+         * {@code @Min} e {@code @Max} garantem um valor de ano plausível.
+         */
+        @Min(value = 1000, message = "Ano de publicação inválido")
+        @Max(value = 9999, message = "Ano de publicação inválido")
+        Integer anoPublicacao
 
 ) {
 }

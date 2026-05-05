@@ -27,8 +27,8 @@ import java.time.Instant;
 // @Entity informa ao JPA que esta classe é uma entidade persistível.
 @Entity
 // @Table define o nome exato da tabela no banco. Sem ela, o JPA usaria o nome da classe.
-@Table(name = "produto")
-public class Produto {
+@Table(name = "livro")
+public class Livro {
 
     /**
      * Identificador único do produto.
@@ -52,10 +52,18 @@ public class Produto {
      * <p>{@code @NotBlank} (Bean Validation) garante que o nome não seja nulo, vazio ou só espaços.
      * {@code @Size} limita o tamanho mínimo e máximo da string.
      */
-    @NotBlank(message = "O nome do produto é obrigatório")
-    @Size(min = 2, max = 120, message = "O nome deve ter entre 2 e 120 caracteres")
-    @Column(name = "nome", nullable = false, length = 120)
-    private String nome;
+    @NotBlank(message = "O título do livro é obrigatório")
+    @Size(min = 2, max = 120, message = "O título deve ter entre 2 e 120 caracteres")
+    @Column(name = "titulo", nullable = false, length = 120)
+    private String titulo;
+
+    /**
+     * Nome do autor do livro.
+     */
+    @NotBlank(message = "O autor é obrigatório")
+    @Size(min = 2, max = 150, message = "O autor deve ter entre 2 e 150 caracteres")
+    @Column(name = "autor", nullable = false, length = 150)
+    private String autor;
 
     /**
      * Descrição opcional do produto.
@@ -81,6 +89,14 @@ public class Produto {
     @Digits(integer = 8, fraction = 2, message = "Preço deve ter no máximo 8 dígitos inteiros e 2 decimais")
     @Column(name = "preco", nullable = false, precision = 10, scale = 2)
     private BigDecimal preco;
+
+    /**
+     * Ano de publicação do livro.
+     */
+    @Min(value = 1000, message = "Ano de publicação inválido")
+    @Max(value = 9999, message = "Ano de publicação inválido")
+    @Column(name = "ano_publicacao")
+    private Integer anoPublicacao;
 
     /**
      * Data e hora de criação do registro.
@@ -134,21 +150,27 @@ public class Produto {
      * Construtor padrão exigido pelo JPA.
      * O JPA precisa instanciar a entidade via reflexão ao carregar do banco.
      */
-    public Produto() {
+    public Livro() {
     }
 
     /**
-     * Construtor conveniente para criação de produtos.
+     * Construtor conveniente para criação de livros.
      *
-     * @param nome      nome do produto
-     * @param descricao descrição opcional
-     * @param preco     preço do produto
+     * @param titulo         título do livro
+     * @param autor          nome do autor
+     * @param descricao       descrição opcional
+     * @param preco          preço do livro
+     * @param anoPublicacao  ano de publicação
      */
-    public Produto(String nome, String descricao, BigDecimal preco) {
-        this.nome = nome;
+
+    public Livro(String titulo, String autor, String descricao, BigDecimal preco, Integer anoPublicacao) {
+        this.titulo = titulo;
+        this.autor = autor;
         this.descricao = descricao;
         this.preco = preco;
+        this.anoPublicacao = anoPublicacao;
     }
+
 
     // =========================================================================
     // GETTERS E SETTERS
@@ -158,22 +180,23 @@ public class Produto {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public String getTitulo() {
+        return titulo;
+    }
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
     }
 
-    public String getNome() {
-        return nome;
+    public String getAutor() {
+        return autor;
     }
-
-    public void setNome(String nome) {
-        this.nome = nome;
+    public void setAutor(String autor) {
+        this.autor = autor;
     }
 
     public String getDescricao() {
         return descricao;
     }
-
     public void setDescricao(String descricao) {
         this.descricao = descricao;
     }
@@ -181,9 +204,15 @@ public class Produto {
     public BigDecimal getPreco() {
         return preco;
     }
-
     public void setPreco(BigDecimal preco) {
         this.preco = preco;
+    }
+
+    public Integer getAnoPublicacao() {
+        return anoPublicacao;
+    }
+    public void setAnoPublicacao(Integer anoPublicacao) {
+        this.anoPublicacao = anoPublicacao;
     }
 
     public Instant getCriadoEm() {
@@ -196,14 +225,19 @@ public class Produto {
 
     public Instant getAtualizadoEm() {
         return atualizadoEm;
-    }
 
+    }
     public void setAtualizadoEm(Instant atualizadoEm) {
         this.atualizadoEm = atualizadoEm;
     }
 
     @Override
     public String toString() {
-        return "Produto{id=" + id + ", nome='" + nome + "', preco=" + preco + "}";
+        return "Livro{" +
+                "id=" + id +
+                ", titulo='" + titulo + '\'' +
+                ", autor='" + autor + '\'' +
+                ", preco=" + preco +
+                '}';
     }
 }

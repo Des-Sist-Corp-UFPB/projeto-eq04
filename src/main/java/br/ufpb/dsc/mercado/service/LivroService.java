@@ -1,9 +1,9 @@
 package br.ufpb.dsc.mercado.service;
 
-import br.ufpb.dsc.mercado.domain.Produto;
-import br.ufpb.dsc.mercado.dto.ProdutoForm;
-import br.ufpb.dsc.mercado.exception.ProdutoNaoEncontradoException;
-import br.ufpb.dsc.mercado.repository.ProdutoRepository;
+import br.ufpb.dsc.mercado.domain.Livro;
+import br.ufpb.dsc.mercado.dto.LivroForm;
+import br.ufpb.dsc.mercado.exception.LivroNaoEncontradoException;
+import br.ufpb.dsc.mercado.repository.LivroRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 /**
- * Serviço de negócio para operações relacionadas a {@link Produto}.
+ * Serviço de negócio para operações relacionadas a {@link Livro}.
  *
  * <p><strong>O que é a camada de Service?</strong><br>
  * O Service é responsável pela lógica de negócio da aplicação. Ele fica entre o
@@ -36,10 +36,10 @@ import org.springframework.util.StringUtils;
 // @Transactional(readOnly = true) como padrão da classe melhora performance em leituras,
 // pois informa ao banco que não haverá escrita nesta transação.
 @Transactional(readOnly = true)
-public class ProdutoService {
+public class LivroService {
 
     // Injeção de dependência via construtor — prática recomendada pelo Spring e mais testável
-    private final ProdutoRepository produtoRepository;
+    private final LivroRepository livroRepository;
 
     /**
      * Construtor com injeção de dependência.
@@ -48,77 +48,79 @@ public class ProdutoService {
      * A injeção via construtor é preferível à injeção via campo ({@code @Autowired} no campo)
      * porque torna as dependências explícitas e facilita os testes unitários com Mockito.
      *
-     * @param produtoRepository repositório JPA de produtos
+     * @param livroRepository repositório JPA de livros
      */
-    public ProdutoService(ProdutoRepository produtoRepository) {
-        this.produtoRepository = produtoRepository;
+    public LivroService(LivroRepository livroRepository) {
+        this.livroRepository = livroRepository;
     }
 
     /**
-     * Lista todos os produtos com paginação.
+     * Lista todos os livros com paginação.
      *
      * <p>Utiliza {@code @Transactional(readOnly = true)} herdado da classe,
      * otimizando a performance pois o banco sabe que não precisa rastrear mudanças.
      *
      * @param pageable configuração de página, tamanho e ordenação
-     * @return página de produtos
+     * @return página de livros
      */
-    public Page<Produto> listar(Pageable pageable) {
-        return produtoRepository.findAll(pageable);
+    public Page<Livro> listar(Pageable pageable) {
+        return livroRepository.findAll(pageable);
     }
 
     /**
-     * Busca produtos pelo nome (parcial, sem distinção de maiúsculas/minúsculas).
-     * Se a busca estiver vazia, retorna todos os produtos.
+     * Busca livros pelo título (parcial, sem distinção de maiúsculas/minúsculas).
+     * Se a busca estiver vazia, retorna todos os livros.
      *
-     * @param busca    texto para filtrar por nome (pode ser nulo ou vazio)
+     * @param busca    texto para filtrar por título (pode ser nulo ou vazio)
      * @param pageable configuração de paginação
-     * @return página de produtos filtrados
+     * @return página de livros filtrados
      */
-    public Page<Produto> buscar(String busca, Pageable pageable) {
+    public Page<Livro> buscar(String busca, Pageable pageable) {
         if (!StringUtils.hasText(busca)) {
-            return produtoRepository.findAll(pageable);
+            return livroRepository.findAll(pageable);
         }
-        return produtoRepository.findByNomeContainingIgnoreCase(busca.trim(), pageable);
+        return livroRepository.findByTituloContainingIgnoreCase(busca.trim(), pageable);
     }
 
     /**
-     * Busca um produto pelo seu ID.
+     * Busca um livro pelo seu ID.
      *
      * <p>{@code orElseThrow} é um método do {@code Optional<T>} que retorna o valor
      * se presente, ou lança a exceção fornecida caso contrário.
      *
-     * @param id identificador do produto
-     * @return produto encontrado
-     * @throws ProdutoNaoEncontradoException se nenhum produto for encontrado com o ID informado
+     * @param id identificador do livro
+     * @return livro encontrado
+     * @throws LivroNaoEncontradoException se nenhum livro for encontrado com o ID informado
      */
-    public Produto buscarPorId(Long id) {
-        return produtoRepository.findById(id)
-                .orElseThrow(() -> new ProdutoNaoEncontradoException(id));
+    public Livro buscarPorId(Long id) {
+        return livroRepository.findById(id)
+                .orElseThrow(() -> new LivroNaoEncontradoException(id));
     }
 
     /**
-     * Cria um novo produto a partir dos dados do formulário.
+     * Cria um novo livro a partir dos dados do formulário.
      *
      * <p>{@code @Transactional} (sem readOnly) garante que o INSERT seja
      * feito dentro de uma transação com rollback automático em caso de erro.
      *
      * @param form dados validados do formulário
-     * @return produto criado e persistido com ID gerado
+     * @return livro criado e persistido com ID gerado
      */
     @Transactional
-    public Produto criar(ProdutoForm form) {
-        Produto produto = new Produto(
-                form.nome(),
+    public Livro criar(LivroForm form) {
+        Livro livro = new Livro(
+                form.titulo(),
+                form.autor(),
                 form.descricao(),
-                form.preco()
+                form.preco(),
+                form.anoPublicacao()
         );
         // O método save() do JpaRepository faz o INSERT e retorna a entidade com o ID gerado
-        return produtoRepository.save(produto);
+        return livroRepository.save(livro);
     }
 
     /**
-     * Atualiza os dados de um produto existente.
+     * Atualiza os dados de um livro existente.
      *
      * <p>O padrão aqui é "buscar, modificar, salvar":
      * <ol>
@@ -127,37 +129,39 @@ public class ProdutoService {
      *   <li>O JPA detecta as mudanças automaticamente (dirty checking) e faz UPDATE ao final da transação.</li>
      * </ol>
      *
-     * @param id   identificador do produto a ser atualizado
+     * @param id   identificador do livro a ser atualizado
      * @param form novos dados validados
-     * @return produto atualizado
-     * @throws ProdutoNaoEncontradoException se o produto não existir
+     * @return livro atualizado
+     * @throws LivroNaoEncontradoException se o livro não existir
      */
     @Transactional
-    public Produto atualizar(Long id, ProdutoForm form) {
-        Produto produto = buscarPorId(id);
-        produto.setNome(form.nome());
-        produto.setDescricao(form.descricao());
-        produto.setPreco(form.preco());
+    public Livro atualizar(Long id, LivroForm form) {
+        Livro livro = buscarPorId(id);
+        livro.setTitulo(form.titulo());
+        livro.setAutor(form.autor());
+        livro.setDescricao(form.descricao());
+        livro.setPreco(form.preco());
+        livro.setAnoPublicacao(form.anoPublicacao());
         // Não precisa chamar save() explicitamente — o JPA (dirty checking) detecta a mudança
         // e executa o UPDATE automaticamente ao final da transação
-        return produtoRepository.save(produto);
+        return livroRepository.save(livro);
     }
 
     /**
-     * Exclui um produto pelo ID.
+     * Exclui um livro pelo ID.
      *
-     * <p>Verifica se o produto existe antes de excluir, lançando exceção amigável
+     * <p>Verifica se o livro existe antes de excluir, lançando exceção amigável
      * em vez de deixar o banco retornar um erro genérico.
      *
-     * @param id identificador do produto a ser excluído
-     * @throws ProdutoNaoEncontradoException se o produto não existir
+     * @param id identificador do livro a ser excluído
+     * @throws LivroNaoEncontradoException se o livro não existir
      */
     @Transactional
     public void excluir(Long id) {
         // Verifica existência para dar mensagem de erro clara
-        if (!produtoRepository.existsById(id)) {
-            throw new ProdutoNaoEncontradoException(id);
+        if (!livroRepository.existsById(id)) {
+            throw new LivroNaoEncontradoException(id);
         }
-        produtoRepository.deleteById(id);
+        livroRepository.deleteById(id);
     }
 }

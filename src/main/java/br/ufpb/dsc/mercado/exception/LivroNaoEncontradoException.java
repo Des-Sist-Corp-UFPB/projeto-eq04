@@ -21,15 +21,15 @@ package br.ufpb.dsc.mercado.exception;
  *
  * @author DSC - UFPB Campus IV
  */
-public class ProdutoNaoEncontradoException extends RuntimeException {
+public class LivroNaoEncontradoException extends RuntimeException {
 
     /**
      * Cria uma exceção com mensagem padrão informando o ID do produto não encontrado.
      *
      * @param id identificador do produto que não foi encontrado
      */
-    public ProdutoNaoEncontradoException(Long id) {
-        super("Produto não encontrado com id: " + id);
+    public LivroNaoEncontradoException(Long id) {
+        super("Livro não encontrado com id: " + id);
     }
 
     /**
@@ -37,7 +37,7 @@ public class ProdutoNaoEncontradoException extends RuntimeException {
      *
      * @param mensagem descrição do erro
      */
-    public ProdutoNaoEncontradoException(String mensagem) {
+    public LivroNaoEncontradoException(String mensagem) {
         super(mensagem);
     }
 }
