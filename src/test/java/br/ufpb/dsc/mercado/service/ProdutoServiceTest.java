@@ -1,5 +1,9 @@
 package br.ufpb.dsc.mercado.service;
 
+import br.ufpb.dsc.mercado.domain.Livro;
+import br.ufpb.dsc.mercado.dto.LivroForm;
+import br.ufpb.dsc.mercado.exception.LivroNaoEncontradoException;
+import br.ufpb.dsc.mercado.repository.LivroRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,198 +19,153 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-/**
- * Testes unitários para {@link ProdutoService}.
- *
- * <p><strong>Testes Unitários vs Testes de Integração:</strong>
- * <ul>
- *   <li><strong>Unitário</strong>: testa uma classe isolada, substituindo suas dependências
- *       por objetos falsos (mocks). Rápido, sem banco de dados.</li>
- *   <li><strong>Integração</strong>: testa múltiplas camadas juntas com infraestrutura real
- *       (banco, HTTP, etc.). Mais lento, mais realista.</li>
- * </ul>
- *
- * <p><strong>Mockito:</strong><br>
- * Mockito é o framework de mocking mais usado no ecossistema Spring.
- * Permite criar objetos "falsos" que simulam o comportamento das dependências:
- * <ul>
- *   <li>{@code @Mock} — cria um mock da classe/interface.</li>
- *   <li>{@code @InjectMocks} — cria a classe sob teste e injeta os mocks nela.</li>
- *   <li>{@code when(...).thenReturn(...)} — configura o comportamento do mock.</li>
- *   <li>{@code verify(...)} — verifica se um método foi chamado.</li>
- * </ul>
- *
- * <p><strong>AssertJ:</strong><br>
- * Biblioteca de asserções fluentes incluída no Spring Boot Test.
- * Mais legível que o JUnit assertions padrão:
- * {@code assertThat(resultado).isNotNull().hasFieldOrPropertyWithValue("nome", "Arroz")}
- *
- * @author DSC - UFPB Campus IV
- */
-@ExtendWith(MockitoExtension.class) // Ativa o suporte ao Mockito no JUnit 5
-@DisplayName("ProdutoService — Testes Unitários")
+@ExtendWith(MockitoExtension.class)
+@DisplayName("LivroService — Testes Unitários")
 class ProdutoServiceTest {
 
-    // @Mock cria um objeto falso que simula o ProdutoRepository
-    // Nenhuma consulta real ao banco é feita — tudo é simulado
     @Mock
-    private ProdutoRepository produtoRepository;
+    private LivroRepository livroRepository;
 
-    // @InjectMocks cria uma instância real do ProdutoService
-    // e injeta automaticamente o @Mock acima no construtor
     @InjectMocks
-    private ProdutoService produtoService;
+    private LivroService livroService;
 
-    // Dados de teste compartilhados
-    private Produto produtoExistente;
-    private ProdutoForm formValido;
+    private Livro livroExistente;
+    private LivroForm formValido;
 
-    /**
-     * Configuração executada antes de cada teste.
-     * {@code @BeforeEach} garante um estado limpo e previsível para cada teste.
-     */
     @BeforeEach
     void setUp() {
-        produtoExistente = new Produto("Arroz Integral", "Arroz integral tipo 1", new BigDecimal("8.99"));
-        produtoExistente.setId(1L);
+        livroExistente = new Livro("Clean Code", "Robert C. Martin",
+                "Guia de código limpo.", new BigDecimal("99.90"), 2008);
+        // Simula ID gerado pelo banco via reflexão
+        try {
+            var field = Livro.class.getDeclaredField("id");
+            field.setAccessible(true);
+            field.set(livroExistente, 1L);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
-        formValido = new ProdutoForm("Feijão Preto", "Feijão preto premium", new BigDecimal("7.50"));
+        formValido = new LivroForm("Effective Java", "Joshua Bloch",
+                "Boas práticas em Java.", new BigDecimal("120.00"), 2018);
     }
 
     // =========================================================================
-    // TESTES: buscarPorId
+    // buscarPorId
     // =========================================================================
 
     @Test
-    @DisplayName("buscarPorId: deve retornar produto quando ID existe")
-    void buscarPorId_quandoIdExiste_deveRetornarProduto() {
-        // GIVEN (Arrange) — configura o comportamento do mock
-        // "Quando findById(1L) for chamado, retorne o produto de teste"
-        when(produtoRepository.findById(1L)).thenReturn(Optional.of(produtoExistente));
+    @DisplayName("buscarPorId: deve retornar livro quando ID existe")
+    void buscarPorId_quandoIdExiste_deveRetornarLivro() {
+        when(livroRepository.findById(1L)).thenReturn(Optional.of(livroExistente));
 
-        // WHEN (Act) — executa o método sob teste
-        Produto resultado = produtoService.buscarPorId(1L);
+        Livro resultado = livroService.buscarPorId(1L);
 
-        // THEN (Assert) — verifica o resultado
         assertThat(resultado).isNotNull();
         assertThat(resultado.getId()).isEqualTo(1L);
-        assertThat(resultado.getNome()).isEqualTo("Arroz Integral");
+        assertThat(resultado.getTitulo()).isEqualTo("Clean Code");
 
-        // Verifica que o repositório foi chamado exatamente uma vez com o ID correto
-        verify(produtoRepository, times(1)).findById(1L);
+        verify(livroRepository, times(1)).findById(1L);
     }
 
     @Test
     @DisplayName("buscarPorId: deve lançar exceção quando ID não existe")
     void buscarPorId_quandoIdNaoExiste_deveLancarExcecao() {
-        // GIVEN
-        when(produtoRepository.findById(99L)).thenReturn(Optional.empty());
+        when(livroRepository.findById(99L)).thenReturn(Optional.empty());
 
-        // WHEN + THEN — assertThatThrownBy verifica que a exceção é lançada
-        assertThatThrownBy(() -> produtoService.buscarPorId(99L))
-                .isInstanceOf(ProdutoNaoEncontradoException.class)
+        assertThatThrownBy(() -> livroService.buscarPorId(99L))
+                .isInstanceOf(LivroNaoEncontradoException.class)
                 .hasMessageContaining("99");
 
-        verify(produtoRepository, times(1)).findById(99L);
+        verify(livroRepository, times(1)).findById(99L);
     }
 
     // =========================================================================
-    // TESTES: criar
+    // criar
     // =========================================================================
 
     @Test
-    @DisplayName("criar: deve salvar e retornar o novo produto")
-    void criar_comFormValido_deveSalvarERetornarProduto() {
-        // GIVEN
-        // Simula o save() retornando um produto com ID gerado pelo banco
-        Produto produtoSalvo = new Produto(formValido.nome(), formValido.descricao(), formValido.preco());
-        produtoSalvo.setId(2L);
-        when(produtoRepository.save(any(Produto.class))).thenReturn(produtoSalvo);
+    @DisplayName("criar: deve salvar e retornar o novo livro")
+    void criar_comFormValido_deveSalvarERetornarLivro() {
+        Livro livroSalvo = new Livro(formValido.titulo(), formValido.autor(),
+                formValido.descricao(), formValido.preco(), formValido.anoPublicacao());
+        try {
+            var field = Livro.class.getDeclaredField("id");
+            field.setAccessible(true);
+            field.set(livroSalvo, 2L);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        when(livroRepository.save(any(Livro.class))).thenReturn(livroSalvo);
 
-        // WHEN
-        Produto resultado = produtoService.criar(formValido);
+        Livro resultado = livroService.criar(formValido);
 
-        // THEN
         assertThat(resultado).isNotNull();
         assertThat(resultado.getId()).isEqualTo(2L);
-        assertThat(resultado.getNome()).isEqualTo("Feijão Preto");
-        assertThat(resultado.getPreco()).isEqualByComparingTo("7.50");
+        assertThat(resultado.getTitulo()).isEqualTo("Effective Java");
+        assertThat(resultado.getPreco()).isEqualByComparingTo("120.00");
 
-        // Verifica que save() foi chamado com qualquer Produto (não importa qual instância)
-        verify(produtoRepository, times(1)).save(any(Produto.class));
+        verify(livroRepository, times(1)).save(any(Livro.class));
     }
 
     // =========================================================================
-    // TESTES: atualizar
+    // atualizar
     // =========================================================================
 
     @Test
-    @DisplayName("atualizar: deve modificar os dados do produto existente")
-    void atualizar_quandoProdutoExiste_deveAtualizarDados() {
-        // GIVEN
-        when(produtoRepository.findById(1L)).thenReturn(Optional.of(produtoExistente));
-        when(produtoRepository.save(any(Produto.class))).thenReturn(produtoExistente);
+    @DisplayName("atualizar: deve modificar os dados do livro existente")
+    void atualizar_quandoLivroExiste_deveAtualizarDados() {
+        when(livroRepository.findById(1L)).thenReturn(Optional.of(livroExistente));
+        when(livroRepository.save(any(Livro.class))).thenReturn(livroExistente);
 
-        ProdutoForm formAtualizado = new ProdutoForm("Arroz Branco", "Arroz branco tipo 1", new BigDecimal("5.99"));
+        LivroForm formAtualizado = new LivroForm("Refactoring", "Martin Fowler",
+                "Técnicas de refatoração.", new BigDecimal("130.75"), 1999);
 
-        // WHEN
-        Produto resultado = produtoService.atualizar(1L, formAtualizado);
+        Livro resultado = livroService.atualizar(1L, formAtualizado);
 
-        // THEN
-        assertThat(resultado.getNome()).isEqualTo("Arroz Branco");
-        assertThat(resultado.getPreco()).isEqualByComparingTo("5.99");
+        assertThat(resultado.getTitulo()).isEqualTo("Refactoring");
+        assertThat(resultado.getPreco()).isEqualByComparingTo("130.75");
 
-        verify(produtoRepository).findById(1L);
-        verify(produtoRepository).save(any(Produto.class));
+        verify(livroRepository).findById(1L);
+        verify(livroRepository).save(any(Livro.class));
     }
 
     @Test
-    @DisplayName("atualizar: deve lançar exceção quando produto não existe")
-    void atualizar_quandoProdutoNaoExiste_deveLancarExcecao() {
-        // GIVEN
-        when(produtoRepository.findById(99L)).thenReturn(Optional.empty());
+    @DisplayName("atualizar: deve lançar exceção quando livro não existe")
+    void atualizar_quandoLivroNaoExiste_deveLancarExcecao() {
+        when(livroRepository.findById(99L)).thenReturn(Optional.empty());
 
-        // WHEN + THEN
-        assertThatThrownBy(() -> produtoService.atualizar(99L, formValido))
-                .isInstanceOf(ProdutoNaoEncontradoException.class);
+        assertThatThrownBy(() -> livroService.atualizar(99L, formValido))
+                .isInstanceOf(LivroNaoEncontradoException.class);
 
-        // Verifica que save() NUNCA foi chamado (produto não existe, não deve salvar)
-        verify(produtoRepository, never()).save(any());
+        verify(livroRepository, never()).save(any());
     }
 
     // =========================================================================
-    // TESTES: excluir
+    // excluir
     // =========================================================================
 
     @Test
-    @DisplayName("excluir: deve deletar produto quando ID existe")
-    void excluir_quandoProdutoExiste_deveDeletar() {
-        // GIVEN
-        when(produtoRepository.existsById(1L)).thenReturn(true);
-        // doNothing() é o padrão para void, mas declaramos explicitamente para clareza
-        doNothing().when(produtoRepository).deleteById(1L);
+    @DisplayName("excluir: deve deletar livro quando ID existe")
+    void excluir_quandoLivroExiste_deveDeletar() {
+        when(livroRepository.existsById(1L)).thenReturn(true);
+        doNothing().when(livroRepository).deleteById(1L);
 
-        // WHEN — não deve lançar exceção
-        assertThatCode(() -> produtoService.excluir(1L))
+        assertThatCode(() -> livroService.excluir(1L))
                 .doesNotThrowAnyException();
 
-        // THEN
-        verify(produtoRepository).existsById(1L);
-        verify(produtoRepository).deleteById(1L);
+        verify(livroRepository).existsById(1L);
+        verify(livroRepository).deleteById(1L);
     }
 
     @Test
-    @DisplayName("excluir: deve lançar exceção quando produto não existe")
-    void excluir_quandoProdutoNaoExiste_deveLancarExcecao() {
-        // GIVEN
-        when(produtoRepository.existsById(99L)).thenReturn(false);
+    @DisplayName("excluir: deve lançar exceção quando livro não existe")
+    void excluir_quandoLivroNaoExiste_deveLancarExcecao() {
+        when(livroRepository.existsById(99L)).thenReturn(false);
 
-        // WHEN + THEN
-        assertThatThrownBy(() -> produtoService.excluir(99L))
-                .isInstanceOf(ProdutoNaoEncontradoException.class)
+        assertThatThrownBy(() -> livroService.excluir(99L))
+                .isInstanceOf(LivroNaoEncontradoException.class)
                 .hasMessageContaining("99");
 
-        // deleteById NUNCA deve ser chamado se o produto não existe
-        verify(produtoRepository, never()).deleteById(any());
+        verify(livroRepository, never()).deleteById(any());
     }
 }
