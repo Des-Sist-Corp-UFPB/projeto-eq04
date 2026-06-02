@@ -6,30 +6,66 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title th:text="${titulo != null ? titulo + ' — Mercado DSC' : 'Mercado DSC'}">Mercado DSC</title>
+    <title th:text="${titulo != null ? titulo + ' — Livraria DSC' : 'Livraria DSC'}">Livraria DSC</title>
 
-    <link rel="stylesheet"
-          th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
 
     <style>
-        body { background-color: #f8f9fa; }
-        .navbar-brand { font-weight: bold; }
-        .table-hover tbody tr:hover { background-color: #e9ecef; }
-        .htmx-indicator { display: none; }
-        .htmx-request .htmx-indicator { display: inline-block; }
-        .htmx-request.htmx-indicator { display: inline-block; }
+        body {
+            background-color: #f8f1e9;
+            font-family: 'Georgia', serif;
+        }
+
+        .navbar {
+            background-color: #4a2c0b !important;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.4rem;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-link {
+            color: #f5e6d3 !important;
+            font-weight: 500;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #c19a6b !important;
+            background-color: rgba(255,255,255,0.1);
+            border-radius: 0.4rem;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f5e6d3;
+        }
+
+        .htmx-indicator {
+            display: none;
+        }
+
+        .htmx-request .htmx-indicator {
+            display: inline-block;
+        }
+
+        footer {
+            background-color: #3c2110;
+            color: #d4b89e;
+        }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark mb-4">
     <div class="container">
         <a class="navbar-brand" th:href="@{/produtos}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                 class="bi bi-shop me-2" viewBox="0 0 16 16">
-                <path d="M2.97 1.35A1 1 0 0 1 3.73 1h8.54a1 1 0 0 1 .76.35l2.609 3.044A1.5 1.5 0 0 1 16 5.37v.255a2.375 2.375 0 0 1-4.25 1.458A2.371 2.371 0 0 1 9.875 8 2.37 2.37 0 0 1 8 7.083 2.37 2.37 0 0 1 6.125 8a2.37 2.37 0 0 1-1.875-.917A2.375 2.375 0 0 1 0 5.625V5.37a1.5 1.5 0 0 1 .361-.976zm1.78 4.275a1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0 1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0 1.375 1.375 0 1 0 2.75 0V5.37a.5.5 0 0 0-.12-.325L12.27 2H3.73L1.12 5.045A.5.5 0 0 0 1 5.37v.255a1.375 1.375 0 0 0 2.75 0 .5.5 0 0 1 1 0M1.5 8.5A.5.5 0 0 1 2 9v6h1v-5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v5h6V9a.5.5 0 0 1 1 0v6h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1V9a.5.5 0 0 1 .5-.5M4 15h3v-5H4zm6-5a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1z"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                 class="bi bi-book me-2" viewBox="0 0 16 16">
+                <path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.915-.35-2.107-.692-3.287-.811-1.094-.11-2.278-.043-3.213.493V2.687zM8 1.783C6.5 1.12 4.915.79 3.5.72 1.85.65 0 1.32 0 2.5v10c0 1.18 1.85 1.85 3.5 1.92 1.415.07 2.9.4 4.5 1.063 1.6-.663 3.085-.993 4.5-1.063 1.65-.07 3.5-.74 3.5-1.92V2.5c0-1.18-1.85-1.85-3.5-1.78C11.085.79 9.5 1.12 8 1.783z"/>
             </svg>
-            Mercado DSC
+            Livraria DSC
         </a>
 
         <button class="navbar-toggler" type="button"
@@ -52,7 +88,7 @@
                 <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
                     <a class="nav-link dropdown-toggle" href="#"
                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
                              fill="currentColor" class="bi bi-person-circle me-1" viewBox="0 0 16 16">
                             <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
                             <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
@@ -83,10 +119,10 @@
     <th:block th:replace="${content}"></th:block>
 </main>
 
-<footer class="bg-light border-top mt-5 py-3">
+<footer class="bg-light border-top mt-5 py-4">
     <div class="container text-center text-muted small">
         <p class="mb-0">
-            DSC — Desenvolvimento de Sistemas Corporativos |
+            Livraria DSC — Desenvolvimento de Sistemas Corporativos<br>
             Prof. Rodrigo Rebouças | UFPB Campus IV
         </p>
     </div>
