@@ -43,6 +43,16 @@ class ProdutoControllerTest {
 
     private Livro livroCadastrado;
 
+    @Test
+    @DisplayName("GET /ping: deve retornar status ok sem autenticação")
+    void ping_semAutenticacao_deveRetornarStatusOk() throws Exception {
+        mockMvc.perform(get("/ping"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("ok"))
+                .andExpect(jsonPath("$.service").value("eq04"))
+                .andExpect(jsonPath("$.timestamp").exists());
+    }
+
     @BeforeEach
     void setUp() {
         livroRepository.deleteAll();

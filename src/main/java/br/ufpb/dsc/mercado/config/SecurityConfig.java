@@ -108,8 +108,8 @@ public class SecurityConfig {
                         // Recursos estáticos e health check são públicos
                         // /webjars/** → Bootstrap, HTMX (servidos pelo Spring como recursos estáticos)
                         // /css/**, /js/** → arquivos estáticos personalizados
-                        // /actuator/health → monitoramento sem autenticação
-                        .requestMatchers("/webjars/**", "/css/**", "/js/**", "/actuator/health").permitAll()
+                        // /actuator/health e /ping → monitoramento sem autenticação
+                        .requestMatchers("/webjars/**", "/css/**", "/js/**", "/actuator/health", "/ping").permitAll()
                         // Qualquer outra requisição exige autenticação
                         .anyRequest().authenticated()
                 )
