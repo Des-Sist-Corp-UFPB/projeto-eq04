@@ -1,12 +1,11 @@
 spring:
   datasource:
-    # Em produção, as credenciais vêm de variáveis de ambiente — NUNCA hardcode!
-    # Configure no sistema operacional, Docker, Kubernetes secrets, etc.
-    url: ${DATABASE_URL}
-    username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
+    # Dados de produção da equipe eq04. A senha vem do .env do servidor.
+    url: jdbc:postgresql://postgres:5432/eq04
+    username: eq04
+    driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: ${DATABASE_MAXIMUM_POOL_SIZE:5}
+      maximum-pool-size: 5
   jpa:
     hibernate:
       ddl-auto: validate
