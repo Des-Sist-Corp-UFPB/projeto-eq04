@@ -29,6 +29,10 @@ RUN mvn clean package -DskipTests -B -q
 # ---- Estágio 2: Runtime -----------------------------------------------------
 FROM eclipse-temurin:21-jre-jammy AS runtime
 
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends wget && \
+    rm -rf /var/lib/apt/lists/*
+
 # Criar usuário não-root por segurança
 # Executar aplicações como root em container é má prática de segurança
 RUN groupadd --gid 1001 mercado && \
@@ -49,7 +53,7 @@ EXPOSE 8080
 
 # Health check: o Actuator expõe /actuator/health
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD wget -qO- http://localhost:8080/actuator/health || exit 1
+    CMD wget -qO- http://localhost:8080/ping || exit 1
 
 # Opções JVM para produção:
 #   -XX:+UseContainerSupport: respeita limites de memória do container
