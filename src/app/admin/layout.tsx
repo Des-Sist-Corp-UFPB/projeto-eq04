@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+// Toda a seção /admin é dinâmica — consulta o banco em tempo real.
 export const dynamic = "force-dynamic";
 
 export default function AdminLayout({

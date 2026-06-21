@@ -2,6 +2,10 @@ import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 
+// O client só é criado quando a função é chamada de fato (em tempo de
+// execução), e não na importação do módulo. Isso evita que o `next build`
+// quebre, já que o OPENAI_API_KEY só existe no container em runtime
+// (passado pelo docker-compose), não durante o build da imagem.
 let openaiClient: OpenAI | null = null;
 
 function getOpenAIClient(): OpenAI {

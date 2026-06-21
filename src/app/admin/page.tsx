@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/card";
 
+// Página sempre dinâmica: consulta o banco em tempo real e não deve
+// ser pré-renderizada como estática durante o build do Docker (nesse
+// momento o DATABASE_URL ainda não está disponível).
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {

@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: dsc_password
       POSTGRES_DB: dsc_ebooks
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - dsc_ebooks_db_data:/var/lib/postgresql/data
     healthcheck:
