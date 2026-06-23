@@ -30,7 +30,7 @@ services:
       DATABASE_URL: "postgresql://dsc:dsc_password@db:5432/dsc_ebooks?schema=public"
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_URL: ${AUTH_URL:-http://localhost:3000}
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GROQ_API_KEY: ${GROQ_API_KEY}
 
 volumes:
   dsc_ebooks_db_data:

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { generateRecommendationsForUser } from "@/lib/openai";
 
-// POST /api/recommendations -> gera novas recomendações via OpenAI
 export async function POST() {
   const session = await auth();
   if (!session) {
@@ -15,9 +14,10 @@ export async function POST() {
     );
     return NextResponse.json({ recommendations });
   } catch (error) {
-    console.error("[recommendations] erro ao gerar recomendações:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[recommendations] erro:", message);
     return NextResponse.json(
-      { error: "Não foi possível gerar recomendações no momento." },
+      { error: "Não foi possível gerar recomendações no momento.", detail: message },
       { status: 502 }
     );
   }

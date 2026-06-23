@@ -2,17 +2,18 @@ import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 
-// O client só é criado quando a função é chamada de fato (em tempo de
-// execução), e não na importação do módulo. Isso evita que o `next build`
-// quebre, já que o OPENAI_API_KEY só existe no container em runtime
-// (passado pelo docker-compose), não durante o build da imagem.
-let openaiClient: OpenAI | null = null;
+// Groq é compatível com o SDK da OpenAI — só muda baseURL e a chave.
+// É gratuito e suficiente para recomendações de livros.
+let groqClient: OpenAI | null = null;
 
-function getOpenAIClient(): OpenAI {
-  if (!openaiClient) {
-    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+function getGroqClient(): OpenAI {
+  if (!groqClient) {
+    groqClient = new OpenAI({
+      apiKey: process.env.GROQ_API_KEY,
+      baseURL: "https://api.groq.com/openai/v1",
+    });
   }
-  return openaiClient;
+  return groqClient;
 }
 
 interface RecommendationResult {
@@ -81,8 +82,8 @@ export async function generateRecommendationsForUser(
     catalogoDisponivel: catalogForPrompt,
   });
 
-  const completion = await getOpenAIClient().chat.completions.create({
-    model: "gpt-4o-mini",
+  const completion = await getGroqClient().chat.completions.create({
+    model: "llama-3.3-70b-versatile",
     response_format: { type: "json_object" },
     messages: [
       { role: "system", content: systemPrompt },
@@ -121,6 +122,7 @@ export async function generateRecommendationsForUser(
   });
 
   const titleById = new Map(candidateBooks.map((b) => [b.id, b.title]));
+  
   return safeRecommendations.map((r) => ({
     bookId: r.bookId,
     title: titleById.get(r.bookId) ?? "",
