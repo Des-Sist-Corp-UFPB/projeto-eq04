@@ -7,8 +7,10 @@ import { prismaMock } from "@/__tests__/mocks/prisma";
 import { mockBooks } from "@/__tests__/setup/mock-data";
 import BookDetailPage from "@/app/books/[id]/page";
 
-jest.mock("next/navigation", () => ({
-  notFound: jest.fn(),
+jest.mock("@/components/buy-button", () => ({
+  BuyButton: ({ bookId }: { bookId: string }) => (
+    <button data-testid={`buy-${bookId}`}>Comprar {bookId}</button>
+  ),
 }));
 
 describe("BookDetailPage (/books/[id])", () => {
