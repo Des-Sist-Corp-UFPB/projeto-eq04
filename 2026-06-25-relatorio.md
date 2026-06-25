@@ -6,7 +6,7 @@
 | **Repositório** | https://github.com/des-sist-corp-ufpb/projeto-eq04 |
 | **Aplicação** | https://eq04.dsc.rodrigor.com |
 | **Período de atividade** | 2026-06-09 → 2026-06-25 |
-| **Total de commits** (sem merges, branch main) | 2 |
+| **Total de commits** (sem merges, branch main) | 3 |
 | **Integrantes** | Jose Samuel De Melo Santos (@JoseSamueldeMeloSantos), Cleber Marcolino Dos Santos (@clebermarcolino) |
 
 ---
@@ -54,7 +54,7 @@
 | Aspecto | Status | Observação |
 |---------|--------|-----------|
 | Arquitetura em camadas | ✅ | controller=✅  service=✅  repository=✅ |
-| Testes automatizados | ✅ | 3 arquivo(s) de teste |
+| Testes automatizados | ✅ | 4 Java, 0 JS/TS, 0 Python |
 | Migrations versionadas | ✅ | 2 migration(s) |
 | Logging | ❌ | não detectado |
 | Autenticação / Segurança | ✅ | Spring Security / JWT / decorator detectado |
@@ -74,7 +74,7 @@
 |---------|---------------|---------------------|-------------------|----------------------|----------------|
 | Jose Samuel De Melo Santos (@JoseSamueldeMeloSantos) | 1 | **10** ⚠️ | 3.830 | 2.193 | 100% |
 | Cleber Marcolino Dos Santos (@clebermarcolino) | 0 | **1** | 0 | 0 | 0% |
-| *(sem login GitHub)* | 1 | 50% | — | — | — |
+| *(sem login GitHub)* | 2 | 67% | — | — | — |
 
 > **⚠️ Divergência entre commits locais e GitHub API:**
 > - **@JoseSamueldeMeloSantos**: 1 commit(s) na branch `main` vs **10** registrados na API GitHub (commits em branches não mergeadas ou absorvidos via squash-merge sem preservação de autoria).
