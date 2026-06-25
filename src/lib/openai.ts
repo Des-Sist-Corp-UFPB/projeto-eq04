@@ -9,8 +9,8 @@ let groqClient: OpenAI | null = null;
 function getGroqClient(): OpenAI {
   if (!groqClient) {
     groqClient = new OpenAI({
-      apiKey: process.env.GROQ_API_KEY,
-      baseURL: "https://api.groq.com/openai/v1",
+      apiKey: process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY,
+      baseURL: process.env.OPENAI_API_BASE || "https://api.groq.com/openai/v1",
     });
   }
   return groqClient;
@@ -83,7 +83,7 @@ export async function generateRecommendationsForUser(
   });
 
   const completion = await getGroqClient().chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    model: process.env.OPENAI_MODEL || "llama-3.3-70b-versatile",
     response_format: { type: "json_object" },
     messages: [
       { role: "system", content: systemPrompt },
