@@ -53,4 +53,17 @@ describe("POST /api/authors", () => {
 
     expect(response.status).toBe(403);
   });
+
+  it("retorna 400 para payload inválido (nome vazio)", async () => {
+    mockAuth.mockResolvedValue(mockAdminSession());
+
+    const response = await POST(
+      new Request("http://localhost/api/authors", {
+        method: "POST",
+        body: JSON.stringify({ name: "" }),
+      })
+    );
+
+    expect(response.status).toBe(400);
+  });
 });

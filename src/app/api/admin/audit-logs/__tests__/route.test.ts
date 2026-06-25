@@ -37,4 +37,34 @@ describe("GET /api/admin/audit-logs", () => {
 
     expect(response.status).toBe(403);
   });
+
+  it("retorna logs sem filtros adicionais", async () => {
+    mockAuth.mockResolvedValue(mockAdminSession());
+    prismaMock.auditLog.findMany.mockResolvedValue([]);
+
+    const response = await GET(
+      new Request("http://localhost/api/admin/audit-logs")
+    );
+    expect(response.status).toBe(200);
+    expect(prismaMock.auditLog.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {},
+      })
+    );
+  });
+
+  it("retorna logs filtrados por userId", async () => {
+    mockAuth.mockResolvedValue(mockAdminSession());
+    prismaMock.auditLog.findMany.mockResolvedValue([]);
+
+    const response = await GET(
+      new Request("http://localhost/api/admin/audit-logs?userId=user-123")
+    );
+    expect(response.status).toBe(200);
+    expect(prismaMock.auditLog.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { userId: "user-123" },
+      })
+    );
+  });
 });

@@ -77,6 +77,45 @@ describe("CRUD de livros via Prisma (mock)", () => {
 
       expect(response.status).toBe(403);
     });
+
+    it("retorna 400 para payload de atualização inválido", async () => {
+      mockAuth.mockResolvedValue(mockAdminSession());
+
+      const response = await PUT(
+        new Request("http://localhost/api/books/book-1", {
+          method: "PUT",
+          body: JSON.stringify({ title: "" }), // empty title is invalid
+        }),
+        params
+      );
+
+      expect(response.status).toBe(400);
+    });
+
+    it("atualiza livro com categorias como admin", async () => {
+      mockAuth.mockResolvedValue(mockAdminSession());
+      prismaMock.book.update.mockResolvedValue({
+        ...book,
+        title: "Novo",
+      } as any);
+
+      const response = await PUT(
+        new Request("http://localhost/api/books/book-1", {
+          method: "PUT",
+          body: JSON.stringify({ title: "Novo", categoryIds: ["cat-1"] }),
+        }),
+        params
+      );
+
+      expect(response.status).toBe(200);
+      expect(prismaMock.book.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            categories: { set: [{ id: "cat-1" }] },
+          }),
+        })
+      );
+    });
   });
 
   describe("DELETE", () => {
@@ -93,6 +132,18 @@ describe("CRUD de livros via Prisma (mock)", () => {
       expect(prismaMock.book.delete).toHaveBeenCalledWith({
         where: { id: "book-1" },
       });
+    });
+
+    it("retorna 403 para usuário comum ao remover livro", async () => {
+      mockAuth.mockResolvedValue(mockUserSession());
+
+      const response = await DELETE(
+        new Request("http://localhost/api/books/book-1"),
+        params
+      );
+
+      expect(response.status).toBe(403);
+      expect(prismaMock.book.delete).not.toHaveBeenCalled();
     });
   });
 });

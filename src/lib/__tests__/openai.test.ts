@@ -128,4 +128,34 @@ describe("generateRecommendationsForUser (OpenAI mockada)", () => {
 
     expect(result).toEqual([]);
   });
+
+  it("trata erro de parse de JSON retornado pela IA", async () => {
+    prismaMock.user.findUniqueOrThrow.mockResolvedValue({
+      id: userId,
+      interests: null,
+      favoriteCategories: [],
+      libraryItems: [],
+    } as any);
+    prismaMock.book.findMany.mockResolvedValue([
+      {
+        id: "book-1",
+        title: "Fundação",
+        author: { name: "Isaac Asimov" },
+        categories: [],
+      },
+    ] as any);
+
+    mockCreate.mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: "invalid json string {",
+          },
+        },
+      ],
+    });
+
+    const result = await generateRecommendationsForUser(userId);
+    expect(result).toEqual([]);
+  });
 });

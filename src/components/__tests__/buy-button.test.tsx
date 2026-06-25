@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import "@/__tests__/setup/component-setup";
-import { renderWithProviders, screen, userEvent, waitFor } from "@/__tests__/utils/test-utils";
+import { renderWithProviders, screen, userEvent, waitFor, act } from "@/__tests__/utils/test-utils";
 import { mockUserSession } from "@/__tests__/mocks/auth";
 import { BuyButton } from "@/components/buy-button";
 
@@ -61,11 +61,20 @@ describe("BuyButton", () => {
     await user.click(screen.getByRole("button", { name: /comprar agora/i }));
     expect(screen.getByRole("button", { name: /processando/i })).toBeDisabled();
 
-    resolveFetch!({
-      ok: true,
-      status: 201,
-      json: async () => ({ id: "order-1" }),
-    } as Response);
+    await act(async () => {
+      resolveFetch!({
+        ok: true,
+        status: 201,
+        json: async () => ({ id: "order-1" }),
+      } as Response);
+      await fetchPromise;
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/comprado! disponível na sua biblioteca/i)
+      ).toBeInTheDocument();
+    });
 
     global.fetch = originalFetch;
   });

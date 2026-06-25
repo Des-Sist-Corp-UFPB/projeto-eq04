@@ -55,6 +55,19 @@ export function applyFetchMock() {
         ],
       });
     }
+    if (method === "GET" && path === "/api/admin/audit-logs") {
+      return jsonResponse([
+        {
+          id: "log-1",
+          action: "LOGIN_SUCCESS",
+          entity: "User",
+          entityId: "user-1",
+          ipAddress: "127.0.0.1",
+          createdAt: new Date().toISOString(),
+          user: { name: "Usuário Demo", email: "demo@dscebooks.com" },
+        },
+      ]);
+    }
 
     return jsonResponse({ error: "Not found" }, 404);
   }) as typeof fetch;

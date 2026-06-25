@@ -53,4 +53,16 @@ describe("POST /api/recommendations", () => {
     expect(data.error).toMatch(/não foi possível gerar recomendações/i);
     expect(data.detail).toBe("API indisponível");
   });
+
+  it("retorna 502 quando a integração com OpenAI falha com erro não-instancia de Error", async () => {
+    mockAuth.mockResolvedValue(mockUserSession());
+    mockGenerate.mockRejectedValue("Erro de string bruto");
+
+    const response = await POST();
+    const data = await response.json();
+
+    expect(response.status).toBe(502);
+    expect(data.error).toMatch(/não foi possível gerar recomendações/i);
+    expect(data.detail).toBe("Erro de string bruto");
+  });
 });

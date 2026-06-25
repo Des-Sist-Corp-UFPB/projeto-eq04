@@ -64,4 +64,28 @@ describe("getClientIp", () => {
 
     expect(getClientIp(request)).toBe("192.168.1.1");
   });
+
+  it("retorna null se não houver headers de IP", () => {
+    const request = new Request("http://localhost");
+    expect(getClientIp(request)).toBeNull();
+  });
+});
+
+describe("logAudit - default params", () => {
+  it("salva log sem userId", async () => {
+    prismaMock.auditLog.create.mockResolvedValue({} as any);
+
+    await logAudit({ action: "LOGIN_FAILED" });
+
+    expect(prismaMock.auditLog.create).toHaveBeenCalledWith({
+      data: {
+        action: "LOGIN_FAILED",
+        userId: undefined,
+        entity: undefined,
+        entityId: undefined,
+        metadata: undefined,
+        ipAddress: undefined,
+      },
+    });
+  });
 });

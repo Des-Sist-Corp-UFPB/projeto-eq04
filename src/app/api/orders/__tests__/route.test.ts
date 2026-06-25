@@ -68,4 +68,17 @@ describe("POST /api/orders", () => {
 
     expect(response.status).toBe(404);
   });
+
+  it("retorna 400 para payload inválido (sem bookIds)", async () => {
+    mockAuth.mockResolvedValue(mockUserSession());
+
+    const response = await POST(
+      new Request("http://localhost/api/orders", {
+        method: "POST",
+        body: JSON.stringify({ bookIds: [] }),
+      })
+    );
+
+    expect(response.status).toBe(400);
+  });
 });

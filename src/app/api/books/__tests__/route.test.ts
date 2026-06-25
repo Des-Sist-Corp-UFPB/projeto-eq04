@@ -35,6 +35,20 @@ describe("GET /api/books", () => {
       })
     );
   });
+
+  it("aplica filtro de busca por categoria", async () => {
+    await GET(new Request("http://localhost/api/books?categoryId=cat-1"));
+
+    expect(prismaMock.book.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          AND: expect.arrayContaining([
+            { categories: { some: { id: "cat-1" } } },
+          ]),
+        }),
+      })
+    );
+  });
 });
 
 describe("POST /api/books", () => {
