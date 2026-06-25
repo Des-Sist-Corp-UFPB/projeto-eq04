@@ -5,9 +5,9 @@
 | **Data** | 2026-06-25 |
 | **Repositório** | https://github.com/des-sist-corp-ufpb/projeto-eq04 |
 | **Aplicação** | https://eq04.dsc.rodrigor.com |
-| **Período de atividade** | 2026-06-09 → 2026-06-09 |
-| **Total de commits** (sem merges) | 1 |
-| **Integrantes** | Jose Samuel De Melo Santos (@JoseSamueldeMeloSantos) |
+| **Período de atividade** | 2026-06-09 → 2026-06-25 |
+| **Total de commits** (sem merges, branch main) | 2 |
+| **Integrantes** | Jose Samuel De Melo Santos (@JoseSamueldeMeloSantos), Cleber Marcolino Dos Santos (@clebermarcolino) |
 
 ---
 
@@ -70,17 +70,23 @@
 
 ### Resumo
 
-| Usuário | Commits | % commits | Linhas adicionadas | Linhas no código atual | % código atual |
-|---------|---------|-----------|-------------------|----------------------|----------------|
-| Jose Samuel De Melo Santos (@JoseSamueldeMeloSantos) | 1 | 100% | 3.830 | 2.193 | 100% |
+| Usuário | Commits (main) | Commits (GitHub API) | Linhas adicionadas | Linhas no código atual | % código atual |
+|---------|---------------|---------------------|-------------------|----------------------|----------------|
+| Jose Samuel De Melo Santos (@JoseSamueldeMeloSantos) | 1 | **10** ⚠️ | 3.830 | 2.193 | 100% |
+| Cleber Marcolino Dos Santos (@clebermarcolino) | 0 | **1** | 0 | 0 | 0% |
+| *(sem login GitHub)* | 1 | 50% | — | — | — |
+
+> **⚠️ Divergência entre commits locais e GitHub API:**
+> - **@JoseSamueldeMeloSantos**: 1 commit(s) na branch `main` vs **10** registrados na API GitHub (commits em branches não mergeadas ou absorvidos via squash-merge sem preservação de autoria).
+>
 
 ### Contribuição por Camada
 
-| Camada | Total linhas | Jose Samuel De Melo Santos (@JoseSamueldeMeloSantos) |
-|--------|-------------|---------|
-| Controller | 1.171 | 100% |
-| Repository | 68 | 100% |
-| Service | 430 | 100% |
+| Camada | Total linhas | Jose Samuel De Melo Santos (@JoseSamueldeMeloSantos) | Cleber Marcolino Dos Santos (@clebermarcolino) |
+|--------|-------------|---------|---------|
+| Controller | 1.171 | 100% | 0% |
+| Repository | 68 | 100% | 0% |
+| Service | 430 | 100% | 0% |
 
 ---
 
@@ -88,24 +94,24 @@
 
 Baseado em `git blame` nos arquivos de controller e service.
 
-| Arquivo | Total linhas | Jose Samuel De Melo Santos (@JoseSamueldeMeloSantos) |
-|---------|-------------|---------|
-| `form.html` | 181 | 100% |
-| `ProdutoControllerTest.java` | 177 | 100% |
-| `login.html` | 175 | 100% |
-| `ProdutoServiceTest.java` | 171 | 100% |
-| `LivroService.java` | 167 | 100% |
-| `layout.html` | 149 | 100% |
-| `LivroController.java` | 132 | 100% |
-| `tabela.html` | 80 | 100% |
-| `linha.html` | 76 | 100% |
-| `lista.html` | 72 | 100% |
-| `MercadoApplicationTests.java` | 52 | 100% |
-| `AuthController.java` | 48 | 100% |
-| `V2__insert_livros.sql` | 47 | 100% |
-| `MercadoApplication.java` | 40 | 100% |
-| `PingController.java` | 20 | 100% |
-| `V1__criar_tabela_livro.sql` | 14 | 100% |
+| Arquivo | Total linhas | Jose Samuel De Melo Santos (@JoseSamueldeMeloSantos) | Cleber Marcolino Dos Santos (@clebermarcolino) |
+|---------|-------------|---------|---------|
+| `form.html` | 181 | 100% | 0% |
+| `ProdutoControllerTest.java` | 177 | 100% | 0% |
+| `login.html` | 175 | 100% | 0% |
+| `ProdutoServiceTest.java` | 171 | 100% | 0% |
+| `LivroService.java` | 167 | 100% | 0% |
+| `layout.html` | 149 | 100% | 0% |
+| `LivroController.java` | 132 | 100% | 0% |
+| `tabela.html` | 80 | 100% | 0% |
+| `linha.html` | 76 | 100% | 0% |
+| `lista.html` | 72 | 100% | 0% |
+| `MercadoApplicationTests.java` | 52 | 100% | 0% |
+| `AuthController.java` | 48 | 100% | 0% |
+| `V2__insert_livros.sql` | 47 | 100% | 0% |
+| `MercadoApplication.java` | 40 | 100% | 0% |
+| `PingController.java` | 20 | 100% | 0% |
+| `V1__criar_tabela_livro.sql` | 14 | 100% | 0% |
 
 ---
 
