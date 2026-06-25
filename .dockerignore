@@ -1,12 +1,6 @@
-# Não copiar para o contexto Docker (reduz tamanho do build)
+node_modules
+.next
 .git
-.gitignore
-target/
-*.md
-.idea/
-.vscode/
-*.iml
-.DS_Store
-docker/data/
-dependency-check-report*
-spotbugsXml.xml
+.env
+.env.local
+npm-debug.log

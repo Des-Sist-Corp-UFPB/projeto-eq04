@@ -1,343 +1,125 @@
-# Sistema Mercado — Projeto Base DSC/UFPB
+# DSC E-books — Loja Online de E-books
 
-Projeto base (boilerplate) para a disciplina **Desenvolvimento de Sistemas Corporativos**.
+Implementação inicial do projeto, cobrindo: estrutura base (Docker + Next.js
++ PostgreSQL + Prisma), autenticação com perfis USER/ADMIN, catálogo,
+compra simplificada (sem gateway ainda — fase 6), painel administrativo,
+**logs de auditoria** e **recomendações via API da OpenAI**.
 
-**Professor**: Rodrigo Rebouças | **UFPB — Campus IV**
+## Pré-requisitos
 
----
+- Docker e Docker Compose instalados
+- Uma chave de API da OpenAI (https://platform.openai.com/api-keys)
 
-## Tecnologias
+## Como rodar
 
-| Camada | Tecnologia |
-|--------|-----------|
-| Backend | Java 21 + Spring Boot 3.4.5 |
-| Templates | Thymeleaf + HTMX 2.0 |
-| Frontend | Bootstrap 5.3 |
-| Banco | PostgreSQL 16 |
-| Migrações | Flyway 11 |
-| Segurança | Spring Security 6 |
-| Build | Maven 3.9 |
-| CI/CD | GitHub Actions |
+1. Copie o arquivo de variáveis de ambiente e preencha os valores:
 
----
+   ```bash
+   cp .env.example .env
+   ```
 
-## Guia de Instalação para Alunos
+   - `AUTH_SECRET`: gere com `openssl rand -base64 32`
+   - `OPENAI_API_KEY`: sua chave da OpenAI
 
-### Passo 1 — Instale o Java 21
+2. Suba todo o ambiente com um único comando:
 
-O projeto requer Java 21. Recomendamos o **Eclipse Temurin** (distribuição gratuita da Adoptium).
+   ```bash
+   docker compose up --build
+   ```
 
-**Windows / macOS / Linux:**
-1. Acesse https://adoptium.net/temurin/releases/?version=21
-2. Baixe o instalador para seu sistema operacional
-3. Execute o instalador e siga as instruções
+   Isso cria o container do PostgreSQL e o container da aplicação Next.js.
+   No primeiro start, o schema do banco é sincronizado automaticamente
+   (`prisma db push`) — não é necessário rodar migrations manualmente.
 
-**Verificar se está correto:**
-```bash
-java -version
-# Esperado: openjdk version "21.x.x" ...
-```
+3. Popule o banco com dados de exemplo (livros, autores, categorias e um
+   usuário de demonstração com histórico de compras — necessário para as
+   recomendações terem o que analisar):
 
-> **Dica para Windows:** durante a instalação, marque a opção *"Add to PATH"* e *"Set JAVA_HOME"*.
+   ```bash
+   docker compose exec app npx tsx prisma/seed.ts
+   ```
 
----
+4. Acesse http://localhost:3000
 
-### Passo 2 — Instale o Maven
+   **Credenciais de teste:**
+   - Admin: `admin@dscebooks.com` / `admin123`
+   - Usuário demo: `demo@dscebooks.com` / `user123`
 
-O Maven é a ferramenta de build do projeto.
+## O que está implementado nesta entrega
 
-**macOS (com Homebrew):**
-```bash
-brew install maven
-```
+### Estrutura base
+Next.js (App Router) + TypeScript + Prisma + PostgreSQL + Tailwind, tudo
+orquestrado via Docker Compose, conforme a arquitetura definida no escopo.
 
-**Windows:**
-1. Acesse https://maven.apache.org/download.cgi
-2. Baixe o arquivo `apache-maven-3.x.x-bin.zip`
-3. Extraia para uma pasta (ex.: `C:\maven`)
-4. Adicione `C:\maven\bin` à variável de ambiente `PATH`
+### Autenticação (Auth.js)
+Cadastro, login, logout, perfis `USER`/`ADMIN` e proteção de rotas via
+middleware (`/admin`, `/library`, `/recommendations`).
 
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt install maven
-```
+### Catálogo
+Listagem e busca de livros por título/autor, página de detalhe, compra
+simplificada (gera pedido + libera o livro na biblioteca digital do
+usuário — o gateway de pagamento real é a Fase 6 do roadmap).
 
-**Verificar:**
-```bash
-mvn -version
-# Esperado: Apache Maven 3.x.x
-```
+### Painel administrativo
+Dashboard com estatísticas, CRUD de livros (autores/categorias via API,
+prontos para ganhar telas próprias depois) e visualização dos logs de
+auditoria com filtro por tipo de ação.
 
----
+### Logs de auditoria
+Toda ação sensível grava um registro em `AuditLog` (quem, o quê, quando, de
+onde). Eventos cobertos nesta entrega:
 
-### Passo 3 — Instale o Docker Desktop
+| Categoria | Eventos |
+|---|---|
+| Autenticação | `LOGIN_SUCCESS`, `LOGIN_FAILED`, `LOGOUT`, `USER_REGISTER` |
+| Catálogo (admin) | `BOOK_CREATE`, `BOOK_UPDATE`, `BOOK_DELETE`, `AUTHOR_CREATE`, `CATEGORY_CREATE` |
+| Negócio | `ORDER_CREATE`, `RECOMMENDATION_REQUEST` |
 
-O Docker sobe o banco de dados PostgreSQL sem precisar instalar nada manualmente.
+Cada registro guarda `userId`, `action`, `entity`/`entityId`, `metadata`
+(JSON livre com detalhes), `ipAddress` e `createdAt`. A lógica está
+centralizada em `src/lib/audit.ts` (função `logAudit`), usada em todas as
+rotas de API relevantes — assim, novas ações futuras (ex: integração de
+pagamento na Fase 6) só precisam chamar essa mesma função.
 
-1. Acesse https://www.docker.com/products/docker-desktop/
-2. Baixe e instale o Docker Desktop para seu sistema
-3. Abra o Docker Desktop e aguarde ele inicializar (ícone na barra de tarefas)
+O painel em `/admin/audit-logs` permite filtrar por tipo de ação.
 
-**Verificar:**
-```bash
-docker -v
-# Esperado: Docker version 27.x.x ...
-```
+### Recomendações com IA (OpenAI)
+`src/lib/openai.ts` monta um prompt com o histórico de compras, categorias
+favoritas e interesses do usuário, envia para a API da OpenAI (modelo
+`gpt-4o-mini`, resposta em JSON) e pede recomendações **apenas dentre os
+livros que existem de fato no catálogo** (evita a IA "inventar" livros).
+As recomendações são salvas em `Recommendation` e cada chamada gera um
+log de auditoria (`RECOMMENDATION_REQUEST`).
 
-> **Importante:** o Docker Desktop deve estar **em execução** sempre que você for rodar o projeto.
+Para testar: faça login como usuário demo (já tem histórico de compra) e
+acesse "Recomendações" no menu.
 
----
-
-### Passo 4 — Clone o repositório
-
-```bash
-git clone <URL-DO-REPOSITÓRIO>
-cd base_projeto
-```
-
-> Substitua `<URL-DO-REPOSITÓRIO>` pela URL fornecida pelo professor.
-
----
-
-### Passo 5 — Execute o projeto
-
-Você tem duas opções. **Recomendamos a Opção A para a primeira execução.**
-
-#### Opção A: Tudo com Docker (mais simples)
-
-Um único comando sobe o banco, a aplicação e o Adminer (interface web do banco):
-
-```bash
-docker compose -f docker/docker-compose.dev.yml up --build
-```
-
-Aguarde as mensagens de inicialização. Quando aparecer algo como:
-```
-Started MercadoApplication in X.XXX seconds
-```
-...a aplicação está pronta.
-
-#### Opção B: Banco no Docker + aplicação local (recomendado para desenvolvimento)
-
-Esta opção permite editar o código e ver as mudanças mais rápido:
-
-```bash
-# Terminal 1 — sobe o banco de dados
-docker compose -f docker/docker-compose.dev.yml up postgres adminer
-
-# Terminal 2 — roda a aplicação (em outro terminal, na mesma pasta)
-mvn spring-boot:run
-```
-
----
-
-### Passo 6 — Acesse no browser
-
-| O que | Endereço |
-|-------|----------|
-| Aplicação | http://localhost:8080 |
-| Login | usuário: `admin` / senha: `admin123` |
-| Adminer (banco) | http://localhost:8888 |
-| Health check | http://localhost:8080/actuator/health |
-
----
-
-### Parando o projeto
-
-```bash
-# Parar a aplicação: Ctrl+C no terminal onde está rodando
-
-# Parar os containers Docker:
-docker compose -f docker/docker-compose.dev.yml down
-```
-
----
-
-## Solução de Problemas Comuns
-
-### "Port 8080 already in use"
-Outra aplicação está usando a porta 8080. Para liberar:
-```bash
-# macOS / Linux
-lsof -ti:8080 | xargs kill
-
-# Windows (PowerShell)
-netstat -ano | findstr :8080
-# Anote o PID da última coluna e execute:
-taskkill /PID <número-do-pid> /F
-```
-
-### "Cannot connect to the Docker daemon"
-O Docker Desktop não está em execução. Abra o aplicativo Docker Desktop e aguarde inicializar.
-
-### "Connection refused" ao banco de dados
-O container do PostgreSQL ainda não subiu. Aguarde alguns segundos e tente novamente. Você pode verificar com:
-```bash
-docker compose -f docker/docker-compose.dev.yml ps
-# O container "mercado-postgres-dev" deve estar com status "healthy"
-```
-
-### Erro de compilação Java
-Verifique se o Java 21 está sendo usado pelo Maven:
-```bash
-mvn -version
-# A linha "Java version:" deve mostrar 21.x.x
-```
-Se mostrar outra versão, configure a variável `JAVA_HOME` apontando para o Java 21.
-
-### Flyway: "Found non-empty schema(s) with no schema history table"
-O banco existe mas foi criado sem as migrations. Apague os dados e recomece:
-```bash
-docker compose -f docker/docker-compose.dev.yml down -v
-docker compose -f docker/docker-compose.dev.yml up postgres
-```
-
----
-
-## Testes
-
-```bash
-# Rodar todos os testes (requer Docker em execução — usa Testcontainers)
-mvn test
-
-# Rodar com relatório de cobertura (JaCoCo)
-mvn verify
-# Relatório: abra o arquivo target/site/jacoco/index.html no browser
-```
-
----
-
-## Análise de Segurança (SAST)
-
-```bash
-# SpotBugs + FindSecBugs + OWASP Dependency Check
-mvn verify -Psecurity
-
-# Trivy: scan de vulnerabilidades no filesystem
-docker compose -f docker/docker-compose.dev.yml --profile scan up trivy
-
-# Verificar dependências desatualizadas
-mvn versions:display-dependency-updates -Pversions
-```
-
-Veja `docs/SECURITY.md` para detalhes.
-
----
-
-## Configurando o Deploy Automático (GitHub Actions)
-
-O projeto inclui um pipeline de CI/CD em `.github/workflows/deploy.yml` que:
-- roda os testes automaticamente a cada `push` na branch `main`
-- executa análise de segurança (SAST) no código e nas dependências
-- constrói a imagem Docker de produção e faz o deploy no servidor da disciplina
-
-Para ativar o deploy, você precisa configurar **dois secrets** e uma **variável** no seu repositório GitHub.
-
----
-
-### Secret 1 — Chave SSH de deploy (`SSH_DEPLOY_KEY`)
-
-O servidor da disciplina (`dsc.rodrigor.com`) já está preparado para receber deploys.
-A chave SSH que autoriza o acesso está disponível na página da disciplina:
-
-**Acesse: https://gd.dsc.rodrigor.com** e copie a chave SSH privada disponibilizada pelo professor.
-
-Depois, adicione no seu repositório:
-
-1. No GitHub, acesse seu repositório → **Settings**
-2. No menu lateral: **Secrets and variables → Actions**
-3. Clique em **New repository secret**
-4. Nome: `SSH_DEPLOY_KEY`
-5. Valor: cole a chave privada copiada do portal (o texto completo, incluindo as linhas `-----BEGIN...` e `-----END...`)
-6. Clique em **Add secret**
-
----
-
-### Secret 2 — Chave da API do NVD (`NVD_API_KEY`)
-
-#### O que é o NVD?
-
-**NVD** significa *National Vulnerability Database* — é o banco de dados oficial do governo americano (NIST) que cataloga todas as vulnerabilidades de segurança conhecidas em softwares. Cada vulnerabilidade recebe um identificador chamado **CVE** (ex.: CVE-2024-12345) e uma nota de gravidade chamada **CVSS** (de 0 a 10).
-
-O **OWASP Dependency Check** (uma das ferramentas de segurança do projeto) consulta esse banco para verificar se as bibliotecas que o seu projeto usa possuem vulnerabilidades conhecidas.
-
-#### Por que preciso de uma chave?
-
-Sem a chave, o download do banco de dados NVD é muito lento (pode levar 20+ minutos no CI/CD, ou até falhar por timeout). Com a chave gratuita, o download é feito via API e leva menos de 2 minutos.
-
-#### Como obter (gratuito, leva ~1 minuto)
-
-1. Acesse https://nvd.nist.gov/developers/request-an-api-key
-2. Preencha seu e-mail institucional (use o e-mail da UFPB se possível)
-3. Marque a caixa de uso não-comercial
-4. Clique em **Submit**
-5. Acesse seu e-mail — você receberá a chave em segundos
-
-#### Adicionando ao repositório
-
-1. No GitHub: **Settings → Secrets and variables → Actions**
-2. Clique em **New repository secret**
-3. Nome: `NVD_API_KEY`
-4. Valor: cole a chave recebida por e-mail
-5. Clique em **Add secret**
-
-> **Sem a chave ainda?** O pipeline funciona mesmo sem ela, mas o OWASP Dependency Check
-> pode demorar muito ou falhar por timeout. Configure assim que possível.
-
----
-
-### Variável — Nome da imagem Docker (`APP_IMAGE`)
-
-O pipeline publica a imagem Docker no GitHub Container Registry (GHCR) com o nome do seu repositório. Você não precisa configurar isso manualmente — o workflow usa `${{ github.repository }}` para montar o nome automaticamente.
-
-Mas o arquivo `.env` no servidor precisa saber qual imagem usar. O script de deploy atualiza isso automaticamente na primeira execução.
-
----
-
-### Verificando se o deploy funcionou
-
-Após configurar os secrets e fazer um `push` na branch `main`:
-
-1. No GitHub, clique na aba **Actions**
-2. Você verá o workflow **"Build & Deploy"** em execução
-3. Ele tem 3 etapas: **Testes e SAST → Build e push → Deploy em produção**
-4. Se tudo der certo, a aplicação estará disponível em `https://dsc.rodrigor.com`
-
-Se alguma etapa falhar, clique nela para ver os logs detalhados.
-
----
-
-## Estrutura do Projeto
+## Estrutura de pastas
 
 ```
-base_projeto/
-├── .github/workflows/
-│   └── deploy.yml           # Pipeline CI/CD (GitHub Actions)
-├── src/main/java/br/ufpb/dsc/mercado/
-│   ├── config/              # Configurações (Security, GlobalModelAttributes, etc.)
-│   ├── controller/          # Controllers HTTP + HTMX
-│   ├── domain/              # Entidades JPA
-│   ├── dto/                 # Data Transfer Objects (Records)
-│   ├── exception/           # Exceções de domínio
-│   ├── repository/          # Interfaces Spring Data JPA
-│   └── service/             # Lógica de negócio
-├── src/main/resources/
-│   ├── db/migration/        # Scripts Flyway (V1__, V2__, ...)
-│   └── templates/           # Templates Thymeleaf
-├── docker/                  # Dockerfiles + docker-compose
-├── docs/                    # Documentação técnica
-├── CLAUDE.md                # Memória para Claude Code
-└── pom.xml
+prisma/schema.prisma     modelo de dados completo (todas as entidades do escopo)
+prisma/seed.ts           dados de exemplo
+src/auth.ts              configuração do Auth.js
+src/middleware.ts        proteção de rotas por perfil
+src/lib/audit.ts         serviço central de logs de auditoria
+src/lib/openai.ts        integração com a OpenAI (recomendações)
+src/app/                 páginas (App Router)
+src/app/api/             rotas de API
+src/components/          componentes de UI reutilizáveis
 ```
 
----
+## O que NÃO está nesta entrega (ainda)
 
-## Para Alunos: Adaptando o Boilerplate
+Conforme o roadmap original: gateway de pagamento real (Fase 6), envio de
+e-mails, CRUD completo de autores/categorias via tela (hoje via API), e os
+itens já marcados como fora do escopo inicial (app mobile, assinatura,
+avaliações, chat de suporte etc.).
 
-1. **Renomear** a entidade `Produto` para sua entidade principal
-2. **Criar migration** Flyway com a nova estrutura da tabela (`src/main/resources/db/migration/V2__...sql`)
-3. **Atualizar** Repository, Service, Controller e templates seguindo os mesmos padrões
-4. **Manter** a estrutura de pacotes e convenções (ver `docs/CONVENTIONS.md`)
-5. **Nunca editar** migrations já aplicadas — sempre criar uma nova (`V3__`, `V4__`, ...)
+## Observação técnica
 
-> Dúvidas? Consulte a documentação em `docs/` ou o professor.
+O schema do Prisma já modela **todas** as entidades do escopo (Carrinho,
+Pagamento, etc. — mesmo as que ainda não têm fluxo completo), para evitar
+retrabalho de modelagem nas próximas fases. Em produção, o ideal é migrar
+de `prisma db push` para `prisma migrate` (histórico de migrations
+versionado) antes da entrega final — deixei `db push` agora para garantir
+que `docker compose up` funcione de primeira sem passos manuais extras.

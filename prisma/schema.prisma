@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// Ações registradas no log de auditoria.
+// Cobrem autenticação (segurança) e operações administrativas/negócio (rastreabilidade).
+enum AuditAction {
+  LOGIN_SUCCESS
+  LOGIN_FAILED
+  LOGOUT
+  USER_REGISTER
+  USER_UPDATE
+  BOOK_CREATE
+  BOOK_UPDATE
+  BOOK_DELETE
+  AUTHOR_CREATE
+  AUTHOR_UPDATE
+  AUTHOR_DELETE
+  CATEGORY_CREATE
+  CATEGORY_UPDATE
+  CATEGORY_DELETE
+  ORDER_CREATE
+  RECOMMENDATION_REQUEST
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  passwordHash  String
+  role          Role     @default(USER)
+  interests     String?  // texto livre com interesses do usuário, usado nas recomendações
+
+  favoriteCategories Category[]      @relation("UserFavoriteCategories")
+  orders             Order[]
+  libraryItems       LibraryItem[]
+  auditLogs          AuditLog[]
+  recommendations    Recommendation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Author {
+  id        String   @id @default(cuid())
+  name      String
+  bio       String?
+  books     Book[]
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  books       Book[]
+  favoritedBy User[]   @relation("UserFavoriteCategories")
+  createdAt   DateTime @default(now())
+}
+
+model Book {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  coverUrl    String?
+
+  authorId String
+  author   Author @relation(fields: [authorId], references: [id])
+
+  categories Category[]
+
+  orderItems      OrderItem[]
+  libraryItems    LibraryItem[]
+  recommendations Recommendation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([title])
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  items     OrderItem[]
+  total     Decimal     @db.Decimal(10, 2)
+  status    String      @default("PAID") // gateway de pagamento real entra na Fase 6
+  createdAt DateTime    @default(now())
+}
+
+model OrderItem {
+  id      String  @id @default(cuid())
+  orderId String
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  bookId  String
+  book    Book    @relation(fields: [bookId], references: [id])
+  price   Decimal @db.Decimal(10, 2)
+}
+
+// Biblioteca digital: livros que o usuário já pode acessar após a compra
+model LibraryItem {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  bookId     String
+  book       Book     @relation(fields: [bookId], references: [id])
+  acquiredAt DateTime @default(now())
+
+  @@unique([userId, bookId])
+}
+
+model Recommendation {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id])
+  reason    String?  // explicação curta gerada pela IA
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  userId    String?
+  user      User?       @relation(fields: [userId], references: [id])
+  action    AuditAction
+  entity    String?     // ex: "Book", "Author"
+  entityId  String?
+  metadata  Json?       // dados extras (ex: campos alterados)
+  ipAddress String?
+  createdAt DateTime    @default(now())
+
+  @@index([action])
+  @@index([userId])
+  @@index([createdAt])
+}

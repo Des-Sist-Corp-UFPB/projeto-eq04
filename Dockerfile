@@ -1,38 +1,31 @@
-# ---- Build ---------------------------------------------------------------
-FROM maven:3.9.9-eclipse-temurin-21 AS builder
-
-WORKDIR /build
-
-COPY pom.xml .
-RUN mvn dependency:go-offline -B -q
-
-COPY src ./src
-RUN mvn clean package -DskipTests -B -q
-
-# ---- Runtime -------------------------------------------------------------
-FROM eclipse-temurin:21-jre-jammy AS runtime
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends wget && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN groupadd --gid 1001 mercado && \
-    useradd --uid 1001 --gid mercado --shell /bin/false mercado
-
+# ---- deps ----
+FROM node:20-alpine AS deps
 WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm install --ignore-scripts
 
-COPY --from=builder /build/target/*.jar app.jar
-RUN chown mercado:mercado app.jar
+# ---- build ----
+FROM node:20-alpine AS builder
+WORKDIR /app
+RUN apk add --no-cache openssl
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npx prisma generate
+RUN npm run build
 
-USER mercado
+# ---- runtime ----
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
 
-EXPOSE 8080
+RUN apk add --no-cache openssl
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD wget -qO- http://localhost:8080/ping || exit 1
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
-ENTRYPOINT ["java", \
-    "-XX:+UseContainerSupport", \
-    "-XX:MaxRAMPercentage=75.0", \
-    "-Dspring.profiles.active=prod", \
-    "-jar", "app.jar"]
+EXPOSE 3000
+CMD ["sh", "-c", "npx prisma db push --skip-generate && node server.js"]
