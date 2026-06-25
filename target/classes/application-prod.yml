@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    # Dados de produção da equipe eq04. A senha vem do .env do servidor.
+    url: jdbc:postgresql://postgres:5432/eq04
+    username: eq04
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
+
+logging:
+  level:
+    root: WARN
+    br.ufpb.dsc.mercado: INFO
