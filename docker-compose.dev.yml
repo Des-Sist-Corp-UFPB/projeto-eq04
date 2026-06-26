@@ -1,0 +1,27 @@
+services:
+  app:
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://dsc:dsc_password@db:5432/dsc_ebooks
+    ports:
+      - "3000:3000"
+
+  db:
+    image: postgres:16-alpine
+    container_name: eq04-db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: dsc
+      POSTGRES_PASSWORD: dsc_password
+      POSTGRES_DB: dsc_ebooks
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

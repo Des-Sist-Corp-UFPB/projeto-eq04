@@ -5,8 +5,8 @@ echo "==> Atualizando código..."
 git pull origin main
 
 echo "==> Rebuild e restart do container..."
-docker compose down
-docker compose up --build -d
+docker compose down app || true
+docker compose up --build -d app
 
 echo "==> Aguardando healthcheck..."
 sleep 15
