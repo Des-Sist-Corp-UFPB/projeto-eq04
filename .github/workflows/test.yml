@@ -2,9 +2,9 @@ name: Tests
 
 on:
   push:
-    branches: [main, master, develop]
+    branches: [main, feedback]
   pull_request:
-    branches: [main, master, develop]
+    branches: [main, feedback]
 
 jobs:
   unit-and-integration:
@@ -27,8 +27,8 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://test:test@localhost:5432/dscebooks_test
-      NEXTAUTH_SECRET: ci-test-secret-min-32-chars-long!!
-      NEXTAUTH_URL: http://localhost:3000
+      AUTH_SECRET: ci-test-secret-min-32-chars-long!!
+      AUTH_URL: http://localhost:3000
       GROQ_API_KEY: mock-key-for-ci
 
     steps:
@@ -42,7 +42,7 @@ jobs:
       - run: npm ci
 
       - run: npx prisma generate
-      - run: npx prisma migrate deploy
+      - run: npx prisma db push --skip-generate
 
       - name: Run tests with coverage
         run: npm run test:coverage
@@ -81,8 +81,9 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://test:test@localhost:5432/dscebooks_test
-      NEXTAUTH_SECRET: ci-test-secret-min-32-chars-long!!
-      NEXTAUTH_URL: http://localhost:3000
+      AUTH_SECRET: ci-test-secret-min-32-chars-long!!
+      AUTH_URL: http://localhost:3000
+      GROQ_API_KEY: mock-key-for-ci
       E2E_ENABLED: "true"
 
     steps:
@@ -94,6 +95,11 @@ jobs:
       - run: npm ci
       - run: npx prisma generate
       - run: npx prisma db push --skip-generate
+      - run: npx prisma db seed
       - run: npx playwright install --with-deps chromium
       - run: npm run build
+      - name: Start app in background
+        run: npm run start &
+      - name: Wait for app to be ready
+        run: npx wait-on http://localhost:3000 --timeout 30000
       - run: npm run test:e2e
