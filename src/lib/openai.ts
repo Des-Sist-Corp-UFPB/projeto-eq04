@@ -2,18 +2,23 @@ import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/audit";
 
-// Groq é compatível com o SDK da OpenAI — só muda baseURL e a chave.
-// É gratuito e suficiente para recomendações de livros.
-let groqClient: OpenAI | null = null;
+// LiteLLM da disciplina — compatível com OpenAI SDK, gratuito para a turma.
+// Em dev local, continua funcionando com GROQ_API_KEY se preferir.
+let aiClient: OpenAI | null = null;
 
-function getGroqClient(): OpenAI {
-  if (!groqClient) {
-    groqClient = new OpenAI({
-      apiKey: process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY,
-      baseURL: process.env.OPENAI_API_BASE || "https://api.groq.com/openai/v1",
+function getAIClient(): OpenAI {
+  if (!aiClient) {
+    const isLiteLLM = !!process.env.OPENAI_API_KEY;
+    aiClient = new OpenAI({
+      apiKey: isLiteLLM
+        ? process.env.OPENAI_API_KEY
+        : process.env.GROQ_API_KEY,
+      baseURL: isLiteLLM
+        ? "https://llm.rodrigor.com/v1"
+        : "https://api.groq.com/openai/v1",
     });
   }
-  return groqClient;
+  return aiClient;
 }
 
 interface RecommendationResult {
@@ -82,8 +87,8 @@ export async function generateRecommendationsForUser(
     catalogoDisponivel: catalogForPrompt,
   });
 
-  const completion = await getGroqClient().chat.completions.create({
-    model: process.env.OPENAI_MODEL || "llama-3.3-70b-versatile",
+  const completion = await getAIClient().chat.completions.create({
+    model: "gpt-4o-mini",
     response_format: { type: "json_object" },
     messages: [
       { role: "system", content: systemPrompt },
@@ -122,7 +127,6 @@ export async function generateRecommendationsForUser(
   });
 
   const titleById = new Map(candidateBooks.map((b) => [b.id, b.title]));
-  
   return safeRecommendations.map((r) => ({
     bookId: r.bookId,
     title: titleById.get(r.bookId) ?? "",
