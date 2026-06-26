@@ -47,7 +47,9 @@
     "tailwindcss": "^3.4.13",
     "tsx": "^4.19.1",
     "typescript": "^5.6.2",
-    "undici": "^6.27.0"
+    "undici": "^6.27.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.35"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
