@@ -1,4 +1,6 @@
 services:
+  volumes:
+      - ./seed.js:/app/seed.js
   app:
     image: ghcr.io/des-sist-corp-ufpb/projeto-eq04:latest
     container_name: eq04-app
