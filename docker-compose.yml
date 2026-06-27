@@ -1,15 +1,18 @@
 services:
-  volumes:
-      - ./seed.js:/app/seed.js
   app:
     image: ghcr.io/des-sist-corp-ufpb/projeto-eq04:latest
     container_name: eq04-app
     restart: unless-stopped
+
     env_file:
       - .env
+
     ports:
-      #- "127.0.0.1:8104:3000"
-       - "127.0.0.1:8104:8080"
+      - "127.0.0.1:8104:8080"
+
+    volumes:
+      - ./prisma/seed.ts:/app/prisma/seed.ts
+
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ping || exit 1"]
       interval: 30s
