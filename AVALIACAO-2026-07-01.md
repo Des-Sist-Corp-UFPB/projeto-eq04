@@ -23,7 +23,9 @@
 
 ## 3. Cobertura de Testes (≥ 85%)
 
-✅ **Atendido** — 95.26% (JS) coverage (relatório em `cobertura/`, 67 arquivo(s)).
+✅ **Atendido** — coverage linhas 95.26% (JS) (relatório em `cobertura/`, 67 arquivo(s)).
+
+> Critério: **cobertura de linhas** ≥ 85% (conforme a orientação). As demais métricas (instruções/ramos) são informativas.
 
 > Observação: a cobertura é lida do relatório commitado pela equipe; não é recalculada nesta avaliação.
 
