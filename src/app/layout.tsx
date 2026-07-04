@@ -7,8 +7,11 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "DSC E-books",
+  title: "Alelib",
   description: "Loja online de e-books",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
