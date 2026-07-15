@@ -36,7 +36,7 @@ export default function RecommendationsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between rounded-2xl bg-gradient-to-r from-brand-600 to-brand-800 p-6 md:p-8 text-white shadow-md">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between rounded-2xl bg-brand-700 p-6 md:p-8 text-white shadow-md">
         <div className="space-y-2 max-w-xl">
           <span className="inline-flex items-center gap-1 rounded-full bg-brand-500/30 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-100">
             🤖 Assistente de Leitura
