@@ -50,6 +50,7 @@ export default function RecommendationsPage() {
           <button
             onClick={handleGenerate}
             disabled={loading}
+            style={{ color: "#8a5226" }}
             className="w-full md:w-auto bg-white text-brand-800 hover:bg-brand-50 px-6 py-3 rounded-xl font-bold shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
       {loading ? (
