@@ -43,14 +43,14 @@ export default function RecommendationsPage() {
           </span>
           <h1 className="text-2xl font-extrabold tracking-tight md:text-3xl">Recomendações com Inteligência Artificial</h1>
           <p className="text-sm text-brand-100/90 leading-relaxed">
-            Nossa IA analisa seu histórico de compras, categorias favoritas e interesses pessoais para indicar as leituras mais compatíveis do catálogo.
+            Nossa IA analisa seu histórico de compras, categorias favoritas e interesses pessoais para indicar as leituras mais compatíveis do nosso catálogo para você.
           </p>
         </div>
         <div>
           <Button 
             onClick={handleGenerate} 
             disabled={loading} 
-            className="w-full md:w-auto bg-white text-brand-800 hover:bg-brand-50 px-6 py-3 rounded-xl font-bold shadow-md disabled:bg-white/50"
+            className="w-full md:w-auto bg-white text-brand-800 border-2 border-brand-800 hover:bg-brand-50 px-6 py-3 rounded-xl font-bold shadow-md disabled:bg-white/50 disabled:text-brand-800/50"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -61,7 +61,7 @@ export default function RecommendationsPage() {
                 Analisando...
               </span>
             ) : (
-              "Gerar recomendações"
+              "Gerar Recomendações"
             )}
           </Button>
         </div>
@@ -117,7 +117,7 @@ export default function RecommendationsPage() {
               <div className="mt-6 border-t border-neutral-100 pt-4">
                 <a href={`/books/${rec.bookId}`} className="block">
                   <Button variant="secondary" className="w-full py-2 rounded-xl text-xs font-semibold">
-                    Ver detalhes do livro
+                    Ver detalhes
                   </Button>
                 </a>
               </div>
