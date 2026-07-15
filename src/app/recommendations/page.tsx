@@ -50,7 +50,7 @@ export default function RecommendationsPage() {
           <Button 
             onClick={handleGenerate} 
             disabled={loading} 
-            className="w-full md:w-auto bg-white text-brand-800 border-2 border-brand-800 hover:bg-brand-50 px-6 py-3 rounded-xl font-bold shadow-md disabled:bg-white/50 disabled:text-brand-800/50"
+            className="w-full md:w-auto bg-white !text-brand-800 hover:bg-brand-50 px-6 py-3 rounded-xl font-bold shadow-md disabled:bg-white/50"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
