@@ -17,6 +17,9 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/auto-instrumentations-node": "^0.78.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.220.0",
     "@prisma/client": "^5.20.0",
     "bcryptjs": "^2.4.3",
     "next": "14.2.35",
