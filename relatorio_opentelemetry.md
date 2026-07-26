@@ -102,8 +102,8 @@ Atributos customizados adicionados:
 | Atributo | Valor exemplo | Finalidade |
 |---|---|---|
 | `usuario.id` | `cm123abc` | Rastrear qual usuário acionou a geração |
-| `catalogo.candidatos` | `6` | Quantos livros foram enviados no prompt |
-| `ia.recomendacoes_geradas` | `5` | Quantas recomendações a IA retornou |
+| `catalogo.candidatos` | `5` | Quantos livros foram enviados no prompt |
+| `ia.recomendacoes_geradas` | `3` | Quantas recomendações a IA retornou |
 
 Dentro desse span, um sub-span `chamada-api-openai` mede exclusivamente a latência da API externa:
 
@@ -133,8 +133,8 @@ Atributos customizados adicionados:
 | Atributo | Valor exemplo | Finalidade |
 |---|---|---|
 | `pedido.usuario_id` | `cm123abc` | Rastrear qual usuário fez a compra |
-| `pedido.quantidade_itens` | `2` | Quantos livros foram comprados |
-| `pedido.valor` | `54.80` | Valor total da transação |
+| `pedido.quantidade_itens` | `1` | Quantos livros foram comprados |
+| `pedido.valor` | `29.9` | Valor total da transação |
 | `pedido.id` | `cm456def` | ID do pedido criado |
 
 ```typescript
