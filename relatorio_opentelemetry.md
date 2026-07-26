@@ -3,7 +3,7 @@
 **Disciplina:** Desenvolvimento de Sistemas Corporativos (DSC) — UFPB  
 **Equipe:** eq04  
 **Projeto:** DSC E-books (Alelib)  
-**Stack:** Next.js 14 · TypeScript · Prisma · PostgreSQL · Docker  
+**Stack:** Next.js· TypeScript · Prisma · PostgreSQL · Docker  
 
 ---
 
@@ -18,7 +18,7 @@ otel-lgtm:
   image: grafana/otel-lgtm
   container_name: otel-lgtm
   ports:
-    - "3001:3000"   # Grafana
+    - "3001:3000"   # Grafana    // mudei a porta do grafana para 3001 porque minha aplicação executa na porta 3000
     - "4317:4317"   # OTLP via gRPC
     - "4318:4318"   # OTLP via HTTP
 ```
@@ -59,9 +59,8 @@ export async function register() {
 }
 ```
 
-> 📸 **[inserir print do Grafana com o service name `eq04-alelib` aparecendo no Tempo]**
-
----
+> <img width="1365" height="573" alt="print 1 grafana" src="https://github.com/user-attachments/assets/4186ed59-8f62-4208-9671-c57f62281946" />
+<img width="1365" height="638" alt="print 2 grafana" src="https://github.com/user-attachments/assets/025003cd-fc67-43b0-938f-6594d0beca93" />
 
 ## 2. Trace de uma operação real
 
@@ -78,9 +77,7 @@ A cascata do trace revela claramente a jornada completa da requisição:
 
 A etapa que consome mais tempo é a **chamada à API de IA** (`chamada-api-openai`), que depende de latência de rede e tempo de processamento do modelo de linguagem.
 
-> 📸 **[inserir print da cascata (waterfall) completa do trace de recomendações]**
-
----
+> <img width="1063" height="576" alt="print 3 gerar-recomendacoes-ia" src="https://github.com/user-attachments/assets/4fe382e1-af1c-4646-b7e6-eb23a5f4586d" />
 
 ## 3. Query SQL visível
 
@@ -88,9 +85,7 @@ Dentro do trace da requisição `GET /` (listagem do catálogo), a auto-instrume
 
 O span de query SQL identificado representa a busca de todos os livros com seus autores e categorias para montar o catálogo da página inicial — operação na tabela `Book` com joins em `Author` e `Category`.
 
-> 📸 **[inserir print do span de query SQL dentro do trace, mostrando a tabela/operação]**
-
----
+> <img width="1365" height="637" alt="print 4 grafana query sql" src="https://github.com/user-attachments/assets/9124777c-ab03-458e-92a4-00d1ddf38fe9" />
 
 ## 4. Instrumentação manual
 
@@ -125,7 +120,7 @@ return tracer.startActiveSpan("gerar-recomendacoes-ia", async (span) => {
 });
 ```
 
-> 📸 **[inserir print mostrando os spans `gerar-recomendacoes-ia` e `chamada-api-openai` aninhados no trace]**
+> <img width="1363" height="605" alt="print 6 grafana span gerar recomendações ia" src="https://github.com/user-attachments/assets/8fa0f81b-55d2-45b7-b03c-7f6602b11e2c" />
 
 ### 4.2 Span: `finalizar-pedido`
 
@@ -152,9 +147,7 @@ const order = await tracer.startActiveSpan("finalizar-pedido", async (span) => {
 });
 ```
 
-> 📸 **[inserir print mostrando o span `finalizar-pedido` aninhado no trace com os atributos de negócio]**
-
----
+> <img width="1365" height="635" alt="print 5 grafana compra livro" src="https://github.com/user-attachments/assets/3047a9ba-f596-4c32-bc50-7adae9ab50fe" />
 
 ## 5. Diagnóstico de operação lenta
 
@@ -162,7 +155,11 @@ A operação mais lenta identificada pela telemetria é a **chamada à API de IA
 
 Na cascata do trace, o span `chamada-api-openai` representa a maior fatia do tempo total da requisição — enquanto as queries ao banco levam dezenas de milissegundos, a chamada à IA pode levar vários segundos, dependendo da carga do modelo e da latência de rede até o servidor do LiteLLM.
 
-> 📸 **[inserir print da cascata mostrando a duração de cada span, com destaque para `chamada-api-openai`]**
+<img width="1363" height="597" alt="print 8 grafana chamada api openai" src="https://github.com/user-attachments/assets/96559acd-4679-49a6-b00e-25b62c6d51df" />
+
+<img width="1360" height="625" alt="print 9 grafana passo 5" src="https://github.com/user-attachments/assets/7445dafd-031e-4022-81f3-d249649f4c17" />
+
+<img width="648" height="166" alt="print 11 grafana passo 5" src="https://github.com/user-attachments/assets/944c0c04-3554-4271-92c4-dd078ddeefde" />
 
 **Onde está o gargalo:** na dependência de uma API externa (LiteLLM/Groq) para cada requisição de recomendação.
 
