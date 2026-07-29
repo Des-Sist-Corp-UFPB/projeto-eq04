@@ -3,7 +3,7 @@ services:
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgresql://dsc:dsc_password@db:5432/dsc_ebooks
+      DATABASE_URL: postgresql://dsc:15032002@db:3000/dsc_ebooks
     ports:
       - "3000:3000"
 
