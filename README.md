@@ -1,4 +1,4 @@
-# DSC E-books — Loja Online de E-books
+# AleLib — Loja Online de E-books
 
 Implementação inicial do projeto, cobrindo: estrutura base (Docker + Next.js
 + PostgreSQL + Prisma), autenticação com perfis USER/ADMIN, catálogo,
@@ -173,4 +173,19 @@ cp -r coverage cobertura/
     persiste em Recommendation e gera RECOMMENDATION_REQUEST no audit log
   - src/app/recommendations/page.tsx — UI
 - *Configuração (env vars, sem segredos)*:
-  - OPENAI_API_KEY — chave da API (definida em .env, ver .env.example)
+  - OPENAI_API_KEY — chave da API
+ 
+  
+ ## Entrega Referente ao Teste de Carga (K6)
+
+ - **Rotas testadas e usuários virtuais:**
+O teste executou o cenário healthcheck, que provavelmente testa a rota GET /ping. Foram usados até 10 usuários virtuais (VUs) simultâneos, em 3 estágios (ramp up, sustentação e ramp down) ao longo de 1 minuto e 50 segundos, totalizando 862 requisições a uma taxa de ~7.8 req/s.
+
+- **p(95) e taxa de erro:**
+p(95) de duração: 4.24ms — 95% das requisições responderam em menos de 4.24ms, bem abaixo do threshold definido de 500ms
+Taxa de erro: 0.00% — nenhuma requisição falhou, todas retornaram status 200
+Média de duração: 3.14ms
+Máximo registrado: 103.22ms (pico pontual, provavelmente na primeira conexão TCP)
+
+- **Gargalos identificados:**
+O único pico relevante foi o max de 103.22ms, que ocorreu no estabelecimento inicial da conexão TCP (visível no http_req_connecting: max=0.53ms e http_req_blocked). É um comportamento esperado na primeira requisição — as subsequentes aproveitam a conexão já estabelecida e ficam abaixo de 4ms. Para uma aplicação em produção, o que seria feito para melhorar seria testar rotas mais pesadas (catálogo, detalhes de livro, recomendações) com maior carga de VUs, e implementar cache HTTP nas rotas de leitura para reduzir consultas ao banco sob alta concorrência.
