@@ -1,6 +1,7 @@
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { PrismaInstrumentation } from '@prisma/instrumentation';
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
@@ -13,6 +14,7 @@ export async function register() {
         getNodeAutoInstrumentations({
           '@opentelemetry/instrumentation-fs': { enabled: false },
         }),
+        new PrismaInstrumentation(),
       ],
     });
 

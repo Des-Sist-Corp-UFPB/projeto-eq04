@@ -11,7 +11,7 @@ let aiClient: OpenAI | null = null;
 
 function getAIClient(): OpenAI {
   if (!aiClient) {
-    const isLiteLLM = !!process.env.OPENAI_API_KEY;
+    const isLiteLLM = !!process.env.GROQ_API_KEY;
     aiClient = new OpenAI({
       apiKey: isLiteLLM
         ? process.env.OPENAI_API_KEY
@@ -111,11 +111,11 @@ export async function generateRecommendationsForUser(
       const completion = await tracer.startActiveSpan(
         "chamada-api-openai",
         async (aiSpan) => {
-          aiSpan.setAttribute("ia.modelo", "gpt-4o-mini");
+          aiSpan.setAttribute("ia.modelo", "llama-3.3-70b-versatile");
           aiSpan.setAttribute("ia.candidatos_no_prompt", candidateBooks.length);
           try {
             return await getAIClient().chat.completions.create({
-              model: "gpt-4o-mini",
+              model: "llama-3.3-70b-versatile",
               response_format: { type: "json_object" },
               messages: [
                 { role: "system", content: systemPrompt },

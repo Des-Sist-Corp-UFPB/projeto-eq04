@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState, FormEvent, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ export function NewBookForm() {
   const [price, setPrice] = useState("");
   const [authorId, setAuthorId] = useState("");
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,40 +37,73 @@ export function NewBookForm() {
     );
   }
 
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
-    setLoading(true);
-    setError(null);
+  function handlePdfChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null;
 
-    const response = await fetch("/api/books", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title,
-        price: Number(price),
-        authorId,
-        categoryIds,
-      }),
-    });
-
-    setLoading(false);
-
-    if (!response.ok) {
-      const data = await response.json();
-      setError(
-        typeof data.error === "string"
-          ? data.error
-          : "Não foi possível criar o livro."
-      );
+    // Validação no navegador é só uma conveniência (feedback imediato) —
+    // a validação que realmente importa acontece no servidor, checando os
+    // bytes do arquivo, não apenas o nome/extensão.
+    if (file && file.type !== "application/pdf") {
+      setError("O arquivo do e-book precisa ser um PDF.");
+      event.target.value = "";
+      setPdfFile(null);
       return;
     }
 
-    setTitle("");
-    setPrice("");
-    setAuthorId("");
-    setCategoryIds([]);
-    router.refresh();
+    setError(null);
+    setPdfFile(file);
   }
+
+async function handleSubmit(event: FormEvent) {
+  event.preventDefault();
+
+  if (!pdfFile) {
+    setError("Selecione o arquivo PDF do e-book.");
+    return;
+  }
+
+  setLoading(true);
+  setError(null);
+
+  const formData = new FormData();
+
+  formData.set("title", title);
+  formData.set("price", price);
+  formData.set("authorId", authorId);
+  formData.set(
+    "categoryIds",
+    JSON.stringify(categoryIds)
+  );
+
+  formData.set("pdf", pdfFile);
+
+  const response = await fetch("/api/books", {
+    method: "POST",
+    body: formData,
+  });
+
+  setLoading(false);
+
+  if (!response.ok) {
+    const data = await response.json();
+
+    setError(
+      typeof data.error === "string"
+        ? data.error
+        : "Não foi possível criar o livro."
+    );
+
+    return;
+  }
+
+  setTitle("");
+  setPrice("");
+  setAuthorId("");
+  setCategoryIds([]);
+  setPdfFile(null);
+
+  router.refresh();
+}
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
@@ -116,6 +150,36 @@ export function NewBookForm() {
             {category.name}
           </button>
         ))}
+      </div>
+
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-neutral-700">
+          Arquivo do e-book (PDF)
+        </label>
+        
+        <label
+          htmlFor="pdf-upload"
+          className="inline-flex cursor-pointer rounded-md border border-neutral-300 bg-neutral-50 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
+          Escolher PDF
+        </label>
+
+        <input
+          id="pdf-upload"
+          type="file"
+          accept="application/pdf"
+          onChange={handlePdfChange}
+          className="hidden"
+        />
+        
+        {pdfFile ? (
+    <p className="text-xs text-neutral-500">
+      {pdfFile.name} ({(pdfFile.size / (1024 * 1024)).toFixed(1)} MB)
+    </p>
+  ) : (
+    <p className="text-xs text-neutral-500">
+      Nenhum arquivo selecionado
+    </p>
+  )}
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
