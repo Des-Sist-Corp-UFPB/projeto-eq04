@@ -13,6 +13,12 @@ jest.mock("@/components/buy-button", () => ({
   ),
 }));
 
+jest.mock("next/navigation", () => ({
+  notFound: jest.fn(() => {
+    throw new Error("NEXT_NOT_FOUND");
+  }),
+}));
+
 describe("BookDetailPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -33,7 +39,7 @@ describe("BookDetailPage", () => {
     const { getByText, getByTestId } = render(jsx);
 
     expect(getByText("Science Fiction Novel")).toBeInTheDocument();
-    expect(getByText("por Isaac Asimov")).toBeInTheDocument();
+    expect(getByText("Isaac Asimov")).toBeInTheDocument();
     expect(getByText("Sci-Fi")).toBeInTheDocument();
     expect(getByText("An epic space adventure.")).toBeInTheDocument();
     expect(getByText("R$ 19.99")).toBeInTheDocument();
@@ -43,7 +49,9 @@ describe("BookDetailPage", () => {
   it("calls notFound when book does not exist", async () => {
     prismaMock.book.findUnique.mockResolvedValue(null);
 
-    await BookDetailPage({ params: { id: "inexistente" } });
+    await expect(
+      BookDetailPage({ params: { id: "inexistente" } })
+    ).rejects.toThrow("NEXT_NOT_FOUND");
     expect(notFound).toHaveBeenCalled();
   });
 });

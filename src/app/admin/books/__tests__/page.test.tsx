@@ -31,7 +31,7 @@ describe("AdminBooksPage", () => {
     const jsx = await AdminBooksPage();
     const { getByText, getByTestId } = render(jsx);
 
-    expect(getByText("Gerenciar livros")).toBeInTheDocument();
+    expect(getByText("Gerenciar Livros")).toBeInTheDocument();
     expect(getByText("Test E-Book")).toBeInTheDocument();
     expect(getByText("Author Test")).toBeInTheDocument();
     expect(getByTestId("delete-btn-book-123")).toBeInTheDocument();

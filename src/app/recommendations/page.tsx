@@ -36,35 +36,36 @@ export default function RecommendationsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between rounded-2xl bg-gradient-to-r from-brand-600 to-brand-800 p-6 md:p-8 text-white shadow-md">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between rounded-2xl bg-brand-700 p-6 md:p-8 text-white shadow-md">
         <div className="space-y-2 max-w-xl">
           <span className="inline-flex items-center gap-1 rounded-full bg-brand-500/30 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-100">
             🤖 Assistente de Leitura
           </span>
           <h1 className="text-2xl font-extrabold tracking-tight md:text-3xl">Recomendações com Inteligência Artificial</h1>
           <p className="text-sm text-brand-100/90 leading-relaxed">
-            Nossa IA analisa seu histórico de compras, categorias favoritas e interesses pessoais para indicar as leituras mais compatíveis do catálogo.
+            Nossa IA analisa seu histórico de compras, categorias favoritas e interesses pessoais para indicar as leituras mais compatíveis do nosso catálogo para você.
           </p>
         </div>
         <div>
-          <Button 
-            onClick={handleGenerate} 
-            disabled={loading} 
-            className="w-full md:w-auto bg-white text-brand-800 hover:bg-brand-50 px-6 py-3 rounded-xl font-bold shadow-md disabled:bg-white/50"
+          <button
+            onClick={handleGenerate}
+            disabled={loading}
+            style={{ color: "#8a5226" }}
+            className="w-full md:w-auto bg-white text-brand-800 hover:bg-brand-50 px-6 py-3 rounded-xl font-bold shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="h-4 w-4 animate-spin text-brand-800" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Analisando...
-              </span>
-            ) : (
-              "Gerar recomendações"
-            )}
-          </Button>
-        </div>
+      {loading ? (
+        <span className="flex items-center justify-center gap-2">
+          <svg className="h-4 w-4 animate-spin text-brand-800" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          Analisando...
+        </span>
+      ) : (
+        "Gerar Recomendações"
+      )}
+    </button>
+    </div>
       </div>
 
       {error && (
@@ -117,7 +118,7 @@ export default function RecommendationsPage() {
               <div className="mt-6 border-t border-neutral-100 pt-4">
                 <a href={`/books/${rec.bookId}`} className="block">
                   <Button variant="secondary" className="w-full py-2 rounded-xl text-xs font-semibold">
-                    Ver detalhes do livro
+                    Ver detalhes
                   </Button>
                 </a>
               </div>
