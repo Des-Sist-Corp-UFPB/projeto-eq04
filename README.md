@@ -189,3 +189,7 @@ Máximo registrado: 103.22ms (pico pontual, provavelmente na primeira conexão T
 
 - **Gargalos identificados:**
 O único pico relevante foi o max de 103.22ms, que ocorreu no estabelecimento inicial da conexão TCP (visível no http_req_connecting: max=0.53ms e http_req_blocked). É um comportamento esperado na primeira requisição — as subsequentes aproveitam a conexão já estabelecida e ficam abaixo de 4ms. Para uma aplicação em produção, o que seria feito para melhorar seria testar rotas mais pesadas (catálogo, detalhes de livro, recomendações) com maior carga de VUs, e implementar cache HTTP nas rotas de leitura para reduzir consultas ao banco sob alta concorrência.
+
+ ## Vídeo apresentação do projeto
+ - **[Rotas testadas e usuários virtuais:](https://drive.google.com/file/d/1YaAfpTKbpmG-_o1Iv4NTiPRL1lsNjdTI/view?usp=drive_link)**
+
