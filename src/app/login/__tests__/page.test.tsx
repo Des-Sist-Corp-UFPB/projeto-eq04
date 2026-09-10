@@ -21,9 +21,9 @@ describe("LoginPage (/login)", () => {
   it("renderiza formulário de login", () => {
     renderWithProviders(<LoginPage />);
 
-    expect(screen.getByRole("heading", { name: /entrar/i })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/digite seu e-mail/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/digite sua senha/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /entrar na sua conta/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/e-mail/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^senha$/i)).toBeInTheDocument();
   });
 
   it("exibe erro com credenciais inválidas", async () => {
@@ -31,8 +31,8 @@ describe("LoginPage (/login)", () => {
     const user = userEvent.setup();
 
     renderWithProviders(<LoginPage />);
-    await user.type(screen.getByPlaceholderText(/digite seu e-mail/i), "errado@test.com");
-    await user.type(screen.getByPlaceholderText(/digite sua senha/i), "senhaerrada");
+    await user.type(screen.getByLabelText(/e-mail/i), "errado@test.com");
+    await user.type(screen.getByLabelText(/^senha$/i), "senhaerrada");
     await user.click(screen.getByRole("button", { name: /^entrar$/i }));
 
     await waitFor(() => {
@@ -45,8 +45,8 @@ describe("LoginPage (/login)", () => {
     const user = userEvent.setup();
 
     renderWithProviders(<LoginPage />);
-    await user.type(screen.getByPlaceholderText(/digite seu e-mail/i), "demo@test.com");
-    await user.type(screen.getByPlaceholderText(/digite sua senha/i), "senha123");
+    await user.type(screen.getByLabelText(/e-mail/i), "demo@test.com");
+    await user.type(screen.getByLabelText(/^senha$/i), "senha123");
     await user.click(screen.getByRole("button", { name: /^entrar$/i }));
 
     await waitFor(() => {
@@ -58,7 +58,7 @@ describe("LoginPage (/login)", () => {
     const user = userEvent.setup();
     renderWithProviders(<LoginPage />);
 
-    const passwordInput = screen.getByPlaceholderText(/digite sua senha/i);
+    const passwordInput = screen.getByLabelText(/^senha$/i);
     expect(passwordInput).toHaveAttribute("type", "password");
 
     await user.click(screen.getByRole("button", { name: /mostrar senha/i }));

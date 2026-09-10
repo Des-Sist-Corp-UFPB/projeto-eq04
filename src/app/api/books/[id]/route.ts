@@ -26,6 +26,7 @@ const updateBookSchema = z.object({
   description: z.string().optional(),
   price: z.number().positive().optional(),
   coverUrl: z.string().url().optional(),
+  pdfUrl: z.string().url().optional(),
   authorId: z.string().min(1).optional(),
   categoryIds: z.array(z.string()).optional(),
 });

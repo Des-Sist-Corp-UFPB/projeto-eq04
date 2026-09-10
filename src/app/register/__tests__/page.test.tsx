@@ -19,7 +19,7 @@ describe("RegisterPage (/register)", () => {
 
   it("renderiza formulário de cadastro", () => {
     renderWithProviders(<RegisterPage />);
-    expect(screen.getByRole("heading", { name: /criar conta/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /criar uma conta/i })).toBeInTheDocument();
   });
 
   it("cadastra usuário e faz login automático", async () => {
@@ -27,19 +27,15 @@ describe("RegisterPage (/register)", () => {
     const user = userEvent.setup();
 
     renderWithProviders(<RegisterPage />);
-    await user.type(screen.getByPlaceholderText(/seu nome/i), "Novo User");
-    await user.type(screen.getByPlaceholderText(/seu e-mail/i), "novo@test.com");
-    await user.type(screen.getByPlaceholderText(/sua senha/i), "senha123");
+    await user.type(screen.getByLabelText(/nome completo/i), "Novo User");
+    await user.type(screen.getByLabelText(/^e-mail$/i), "novo@test.com");
+    await user.type(screen.getByLabelText(/^senha$/i), "senha123");
 
-    // Click password toggle button to show password
-    const toggleButton = screen.getByRole("button", { name: /mostrar senha/i });
-    await user.click(toggleButton);
-    expect(screen.getByPlaceholderText(/sua senha/i)).toHaveAttribute("type", "text");
+    await user.click(screen.getByRole("button", { name: /mostrar senha/i }));
+    expect(screen.getByLabelText(/^senha$/i)).toHaveAttribute("type", "text");
 
-    // Click again to hide password
-    const toggleButtonHide = screen.getByRole("button", { name: /ocultar senha/i });
-    await user.click(toggleButtonHide);
-    expect(screen.getByPlaceholderText(/sua senha/i)).toHaveAttribute("type", "password");
+    await user.click(screen.getByRole("button", { name: /ocultar senha/i }));
+    expect(screen.getByLabelText(/^senha$/i)).toHaveAttribute("type", "password");
 
     await user.click(screen.getByRole("button", { name: /criar conta/i }));
 
@@ -61,9 +57,9 @@ describe("RegisterPage (/register)", () => {
     const user = userEvent.setup();
     renderWithProviders(<RegisterPage />);
 
-    await user.type(screen.getByPlaceholderText(/seu nome/i), "Novo User");
-    await user.type(screen.getByPlaceholderText(/seu e-mail/i), "duplicado@test.com");
-    await user.type(screen.getByPlaceholderText(/sua senha/i), "senha123");
+    await user.type(screen.getByLabelText(/nome completo/i), "Novo User");
+    await user.type(screen.getByLabelText(/^e-mail$/i), "duplicado@test.com");
+    await user.type(screen.getByLabelText(/^senha$/i), "senha123");
     await user.click(screen.getByRole("button", { name: /criar conta/i }));
 
     await waitFor(() => {

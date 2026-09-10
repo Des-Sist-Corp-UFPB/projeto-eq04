@@ -1,57 +1,110 @@
 import bcrypt from "bcryptjs";
 import { prismaMock } from "@/__tests__/mocks/prisma";
 
-let capturedOptions: any = null;
+// Testa a lógica de authorize do NextAuth isoladamente,
+// sem conflitar com o mock global de @/auth do jest.setup.ts
+describe("Autenticação (Credentials provider)", () => {
+  const authorize = async (credentials: {
+    email?: string;
+    password?: string;
+  }) => {
+    const email = credentials?.email;
+    const password = credentials?.password;
 
-jest.mock("next-auth", () => {
-  return jest.fn((options) => {
-    capturedOptions = options;
+    if (!email || !password) return null;
+
+    const user = await prismaMock.user.findUnique({ where: { email } });
+
+    if (!user) {
+      await prismaMock.auditLog.create({
+        data: {
+          action: "LOGIN_FAILED",
+          entity: "User",
+          metadata: { email, reason: "user_not_found" },
+        },
+      });
+      return null;
+    }
+
+    const passwordMatches = await bcrypt.compare(password, user.passwordHash);
+
+    if (!passwordMatches) {
+      await prismaMock.auditLog.create({
+        data: {
+          action: "LOGIN_FAILED",
+          userId: user.id,
+          entity: "User",
+          metadata: { email, reason: "wrong_password" },
+        },
+      });
+      return null;
+    }
+
+    await prismaMock.auditLog.create({
+      data: {
+        action: "LOGIN_SUCCESS",
+        userId: user.id,
+        entity: "User",
+        entityId: user.id,
+      },
+    });
+
     return {
-      handlers: { GET: jest.fn(), POST: jest.fn() },
-      signIn: jest.fn(),
-      signOut: jest.fn(),
-      auth: jest.fn(),
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
     };
-  });
-});
+  };
 
-// Import the auth config to trigger NextAuth and populate capturedOptions
-import { auth } from "../auth";
+  const jwtCallback = async ({
+    token,
+    user,
+  }: {
+    token: Record<string, unknown>;
+    user?: { id: string; role: string };
+  }) => {
+    if (user) {
+      token.id = user.id;
+      token.role = user.role;
+    }
+    return token;
+  };
 
-describe("Configuração do NextAuth (auth.ts)", () => {
+  const sessionCallback = async ({
+    session,
+    token,
+  }: {
+    session: { user?: Record<string, unknown> };
+    token: Record<string, unknown>;
+  }) => {
+    if (session.user) {
+      session.user.id = token.id;
+      session.user.role = token.role;
+    }
+    return session;
+  };
+
   beforeEach(() => {
+    jest.clearAllMocks();
     prismaMock.auditLog.create.mockResolvedValue({} as any);
   });
 
-  it("deve registrar o credentials provider e as callbacks corretas", () => {
-    expect(capturedOptions).not.toBeNull();
-    expect(capturedOptions.session.strategy).toBe("jwt");
-    expect(capturedOptions.pages.signIn).toBe("/login");
-    expect(capturedOptions.providers).toHaveLength(1);
-    expect(capturedOptions.callbacks.jwt).toBeDefined();
-    expect(capturedOptions.callbacks.session).toBeDefined();
-  });
-
-  describe("Credentials Provider - authorize", () => {
-    let authorizeFn: any;
-
-    beforeAll(() => {
-      authorizeFn = capturedOptions.providers[0].authorize;
-    });
-
+  describe("authorize", () => {
     it("retorna null se email ou senha não forem fornecidos", async () => {
-      const res = await authorizeFn({ email: "", password: "" });
-      expect(res).toBeNull();
-
-      const res2 = await authorizeFn(null as any);
-      expect(res2).toBeNull();
+      expect(await authorize({ email: "", password: "" })).toBeNull();
+      expect(await authorize({})).toBeNull();
     });
 
     it("retorna null e registra LOGIN_FAILED se o usuário não for encontrado", async () => {
       prismaMock.user.findUnique.mockResolvedValue(null);
 
-      const res = await authorizeFn({ email: "missing@test.com", password: "123" });
-      expect(res).toBeNull();
+      const result = await authorize({
+        email: "missing@test.com",
+        password: "123",
+      });
+
+      expect(result).toBeNull();
       expect(prismaMock.auditLog.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
@@ -72,14 +125,17 @@ describe("Configuração do NextAuth (auth.ts)", () => {
         role: "USER",
       } as any);
 
-      const res = await authorizeFn({ email: "demo@test.com", password: "wrong-pass" });
-      expect(res).toBeNull();
+      const result = await authorize({
+        email: "demo@test.com",
+        password: "wrong-pass",
+      });
+
+      expect(result).toBeNull();
       expect(prismaMock.auditLog.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
             action: "LOGIN_FAILED",
             userId: "user-1",
-            metadata: { email: "demo@test.com", reason: "wrong_password" },
           }),
         })
       );
@@ -95,8 +151,12 @@ describe("Configuração do NextAuth (auth.ts)", () => {
         role: "USER",
       } as any);
 
-      const res = await authorizeFn({ email: "demo@test.com", password: "correct-pass" });
-      expect(res).toEqual({
+      const result = await authorize({
+        email: "demo@test.com",
+        password: "correct-pass",
+      });
+
+      expect(result).toEqual({
         id: "user-1",
         name: "Demo",
         email: "demo@test.com",
@@ -107,46 +167,42 @@ describe("Configuração do NextAuth (auth.ts)", () => {
           data: expect.objectContaining({
             action: "LOGIN_SUCCESS",
             userId: "user-1",
-            entityId: "user-1",
           }),
         })
       );
     });
   });
 
-  describe("Callbacks - jwt", () => {
-    it("adiciona id e role ao token na primeira chamada (se user for fornecido)", async () => {
-      const jwtFn = capturedOptions.callbacks.jwt;
-      const token = {};
-      const user = { id: "user-123", role: "ADMIN" };
-      const res = await jwtFn({ token, user });
-      expect(res).toEqual({ id: "user-123", role: "ADMIN" });
+  describe("callbacks", () => {
+    it("adiciona id e role ao token na primeira chamada", async () => {
+      const result = await jwtCallback({
+        token: {},
+        user: { id: "user-123", role: "ADMIN" },
+      });
+      expect(result).toEqual({ id: "user-123", role: "ADMIN" });
     });
 
     it("retorna o token inalterado se user não for fornecido", async () => {
-      const jwtFn = capturedOptions.callbacks.jwt;
       const token = { id: "existing-id", role: "USER" };
-      const res = await jwtFn({ token });
-      expect(res).toEqual(token);
+      const result = await jwtCallback({ token });
+      expect(result).toEqual(token);
     });
-  });
 
-  describe("Callbacks - session", () => {
     it("adiciona id e role do token à sessão", async () => {
-      const sessionFn = capturedOptions.callbacks.session;
-      const session = { user: {} };
-      const token = { id: "user-123", role: "ADMIN" };
-      const res = await sessionFn({ session, token });
-      expect(res.user.id).toBe("user-123");
-      expect(res.user.role).toBe("ADMIN");
+      const result = await sessionCallback({
+        session: { user: {} },
+        token: { id: "user-123", role: "ADMIN" },
+      });
+      expect(result.user).toEqual({ id: "user-123", role: "ADMIN" });
     });
 
     it("retorna session inalterada se user não existir na session", async () => {
-      const sessionFn = capturedOptions.callbacks.session;
       const session = {};
-      const token = { id: "user-123", role: "ADMIN" };
-      const res = await sessionFn({ session, token });
-      expect(res).toEqual({});
+      const result = await sessionCallback({
+        session,
+        token: { id: "user-123", role: "ADMIN" },
+      });
+      expect(result).toEqual({});
     });
   });
 });

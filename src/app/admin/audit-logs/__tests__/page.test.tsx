@@ -11,7 +11,7 @@ describe("AuditLogsPage", () => {
     const mockFetch = jest.fn().mockImplementation(async (input: RequestInfo | URL) => {
       const url = typeof input === "string" ? input : input.toString();
       const actionParam = new URL(url).searchParams.get("action");
-      
+
       if (actionParam === "LOGIN_SUCCESS") {
         return {
           ok: true,
@@ -29,7 +29,7 @@ describe("AuditLogsPage", () => {
           ],
         } as Response;
       }
-      
+
       return {
         ok: true,
         status: 200,
@@ -60,20 +60,22 @@ describe("AuditLogsPage", () => {
 
     render(<AuditLogsPage />);
 
-    expect(screen.getByText("Logs de auditoria")).toBeInTheDocument();
-    
-    // Wait for the table rows to populate
+    expect(
+      screen.getByRole("heading", { name: /logs de auditoria/i })
+    ).toBeInTheDocument();
+
     await waitFor(() => {
       expect(screen.getByText("LOGIN_SUCCESS")).toBeInTheDocument();
       expect(screen.getByText("BOOK_CREATE")).toBeInTheDocument();
     });
 
-    // Select filter option
-    const select = screen.getByRole("combobox");
+    const select = screen.getByLabelText(/filtrar/i);
     fireEvent.change(select, { target: { value: "LOGIN_SUCCESS" } });
 
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenLastCalledWith(expect.stringContaining("action=LOGIN_SUCCESS"));
+      expect(mockFetch).toHaveBeenLastCalledWith(
+        expect.stringContaining("action=LOGIN_SUCCESS")
+      );
     });
 
     global.fetch = originalFetch;

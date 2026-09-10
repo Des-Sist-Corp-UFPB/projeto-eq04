@@ -14,7 +14,7 @@ describe("HomePage (/)", () => {
     const jsx = await HomePage({ searchParams: {} });
     const { container } = render(jsx);
 
-    expect(container).toHaveTextContent("Catálogo de e-books");
+    expect(container).toHaveTextContent("Catálogo de E-books");
     expect(container).toHaveTextContent("Fundação");
     expect(container).toHaveTextContent("Isaac Asimov");
     expect(container).toHaveTextContent("R$ 29.90");

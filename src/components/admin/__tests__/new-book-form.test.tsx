@@ -17,24 +17,27 @@ describe("NewBookForm", () => {
     mockRefresh.mockClear();
   });
 
-  it("carrega autores e categorias via API", async () => {
+  it("carrega categorias via API", async () => {
     renderWithProviders(<NewBookForm />, { session: mockAdminSession() });
 
     await waitFor(() => {
-      expect(screen.getByText("Isaac Asimov")).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /ficção científica/i })
+      ).toBeInTheDocument();
     });
-    expect(screen.getByRole("button", { name: /ficção científica/i })).toBeInTheDocument();
   });
 
-  it("envia formulário válido e limpa campos após sucesso", async () => {
+  it("envia formulário válido (com nome de autor digitado) e limpa campos após sucesso", async () => {
     const user = userEvent.setup();
     renderWithProviders(<NewBookForm />, { session: mockAdminSession() });
 
-    await waitFor(() => screen.getByText("Isaac Asimov"));
+    await waitFor(() =>
+      screen.getByRole("button", { name: /ficção científica/i })
+    );
 
     await user.type(screen.getByPlaceholderText("Título"), "Novo Livro");
     await user.type(screen.getByPlaceholderText("Preço"), "49.90");
-    await user.selectOptions(screen.getByRole("combobox"), "author-1");
+    await user.type(screen.getByPlaceholderText("Nome do autor"), "Autor Qualquer");
     await user.click(screen.getByRole("button", { name: /ficção científica/i }));
     await user.click(screen.getByRole("button", { name: /adicionar livro/i }));
 
@@ -42,6 +45,7 @@ describe("NewBookForm", () => {
       expect(mockRefresh).toHaveBeenCalled();
     });
     expect(screen.getByPlaceholderText("Título")).toHaveValue("");
+    expect(screen.getByPlaceholderText("Nome do autor")).toHaveValue("");
   });
 
   it("exibe erro quando a API retorna falha", async () => {
@@ -70,10 +74,12 @@ describe("NewBookForm", () => {
     const user = userEvent.setup();
     renderWithProviders(<NewBookForm />, { session: mockAdminSession() });
 
-    await waitFor(() => screen.getByText("Isaac Asimov"));
+    await waitFor(() =>
+      screen.getByRole("button", { name: /ficção científica/i })
+    );
     await user.type(screen.getByPlaceholderText("Título"), "Livro");
     await user.type(screen.getByPlaceholderText("Preço"), "10");
-    await user.selectOptions(screen.getByRole("combobox"), "author-1");
+    await user.type(screen.getByPlaceholderText("Nome do autor"), "Autor Qualquer");
     await user.click(screen.getByRole("button", { name: /adicionar livro/i }));
 
     await waitFor(() => {

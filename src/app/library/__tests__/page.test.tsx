@@ -8,6 +8,10 @@ import { prismaMock } from "@/__tests__/mocks/prisma";
 import { mockAuth, mockUserSession } from "@/__tests__/mocks/auth";
 
 describe("LibraryPage (/library)", () => {
+  beforeEach(() => {
+    mockAuth.mockReset();
+  });
+
   it("lista livros da biblioteca do usuário", async () => {
     mockAuth.mockResolvedValue(mockUserSession());
     prismaMock.libraryItem.findMany.mockResolvedValue([
@@ -27,7 +31,7 @@ describe("LibraryPage (/library)", () => {
     const jsx = await LibraryPage();
     const { container } = render(jsx);
 
-    expect(container).toHaveTextContent("Minha biblioteca");
+    expect(container).toHaveTextContent("Minha Biblioteca");
     expect(container).toHaveTextContent("Fundação");
     expect(prismaMock.libraryItem.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { userId: "user-1" } })
@@ -41,6 +45,7 @@ describe("LibraryPage (/library)", () => {
     const jsx = await LibraryPage();
     const { container } = render(jsx);
 
-    expect(container).toHaveTextContent("Você ainda não possui livros");
+    expect(container).toHaveTextContent("Sua biblioteca está vazia");
+    expect(container).toHaveTextContent("Você ainda não possui nenhum e-book");
   });
 });

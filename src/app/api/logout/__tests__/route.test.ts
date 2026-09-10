@@ -4,6 +4,8 @@ import { mockAuth, mockUserSession } from "@/__tests__/mocks/auth";
 
 describe("POST /api/logout", () => {
   beforeEach(() => {
+    jest.clearAllMocks();
+    mockAuth.mockReset();
     prismaMock.auditLog.create.mockResolvedValue({} as any);
   });
 

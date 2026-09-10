@@ -9,6 +9,8 @@ describe("CRUD de livros via Prisma (mock)", () => {
   const book = mockBooks[0];
 
   beforeEach(() => {
+    jest.clearAllMocks();
+    mockAuth.mockReset();
     prismaMock.auditLog.create.mockResolvedValue({} as any);
   });
 

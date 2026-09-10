@@ -9,15 +9,18 @@ describe("RecommendationsPage", () => {
   it("renders recommendations after generation is triggered", async () => {
     render(<RecommendationsPage />);
 
-    expect(screen.getByText("Recomendações para você")).toBeInTheDocument();
-    
+    expect(
+      screen.getByRole("heading", { name: /recomendações com inteligência artificial/i })
+    ).toBeInTheDocument();
+
     const button = screen.getByRole("button", { name: /gerar recomendações/i });
     fireEvent.click(button);
 
-    // Should show loading status during fetch (mocked in fetch-mock.ts)
     await waitFor(() => {
       expect(screen.getByText("Fundação")).toBeInTheDocument();
-      expect(screen.getByText("Baseado no seu interesse em ficção científica.")).toBeInTheDocument();
+      expect(
+        screen.getByText(/baseado no seu interesse em ficção científica/i)
+      ).toBeInTheDocument();
     });
   });
 
@@ -55,7 +58,9 @@ describe("RecommendationsPage", () => {
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(screen.getByText(/nenhuma recomendação disponível no momento/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/nenhuma recomendação disponível no momento/i)
+      ).toBeInTheDocument();
     });
 
     global.fetch = originalFetch;

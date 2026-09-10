@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export function Navbar() {
   const { data: session } = useSession();
@@ -26,9 +27,15 @@ export function Navbar() {
           className="flex items-center gap-2 text-xl font-bold tracking-tight text-brand-700 transition-colors hover:text-brand-600"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white text-base shadow-sm">
-            📚
+            <Image
+              src="/logo.png"
+              alt="Logo Alelib"
+              width={24}
+              height={24}
+              className="object-contain"
+            />
           </span>
-          DSC E-books
+          Alelib
         </Link>
 
         <div className="flex items-center gap-6 text-sm">
